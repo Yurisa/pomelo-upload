@@ -15,6 +15,34 @@ ipcMain.on('synchronous-message', (event, arg) => {
 })
 
 
+ipcMain.on('uploadChoosedFiles', async (evt, files) => {
+  const input = files.map(item => item.path)
+  console.log('input', input);
+  // const imgs = await new Uploader(input, evt.sender).upload()
+  // if (imgs !== false) {
+  //   const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
+  //   let pasteText = ''
+  //   for (let i in imgs) {
+  //     const url = imgs[i].url || imgs[i].imgUrl
+  //     pasteText += pasteTemplate(pasteStyle, url) + '\r\n'
+  //     const notification = new Notification({
+  //       title: '上传成功',
+  //       body: imgs[i].imgUrl,
+  //       icon: files[i].path
+  //     })
+  //     setTimeout(() => {
+  //       notification.show()
+  //     }, i * 100)
+  //     db.read().get('uploaded').insert(imgs[i]).write()
+  //   }
+  //   clipboard.writeText(pasteText)
+  //   window.webContents.send('uploadFiles', imgs)
+  //   if (settingWindow) {
+  //     settingWindow.webContents.send('updateGallery')
+  //   }
+  // }
+})
+
 // 保持一个对于 window 对象的全局引用，如果你不这样做，
 // 当 JavaScript 对象被垃圾回收， window 会被自动地关闭
 let win
