@@ -1,22 +1,15 @@
 import React, { Component } from 'react';
-import { Button } from 'antd';
-// import './App.css';
+import { Row, Col, Icon } from 'antd';
 import './index.less';
 
 const electron = window.electron;
 const {ipcRenderer} = electron;
-console.log(ipcRenderer.sendSync('synchronous-message', 'ping')) // prints "pong"
-
-ipcRenderer.on('asynchronous-reply', (event, arg) => {
-  console.log(arg) // prints "pong"
-})
-ipcRenderer.send('asynchronous-message', 'ping')
 
 
 class Upload extends Component {
 
   state = {
-    dropover: false
+    dragover: false
   }
 
   componentDidMount() {
@@ -70,6 +63,11 @@ class Upload extends Component {
     reader.readAsDataURL(file); 
   }
 
+  onChange = (e) => {
+    this.ipcSendFiles(e.target.files)
+    document.getElementById('file-uploader').value = ''  
+  }
+
   ipcSendFiles = (files) => {
     let sendFiles = [];
     Array.from(files).forEach((item, index) => {
@@ -86,27 +84,52 @@ class Upload extends Component {
   
 
   render() {
-    const { dropover } = this.state;
+    const { dragover } = this.state;
     return (
-      <div className="App">
-        <header className="App-header">
-          <p>
-            Edit <code>src/App.js</code> and save to reload1234.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <Button type="primary" className="test"></Button>
-          <div style={{width: 400, height: 400, background: 'red'}} onPaste={this.onPaste} onDrop={this.onDrop} onDragOver={this.onDragOver} onDragLeave={this.onDragLeave} >
-
-          </div>
-        </header>
+      <div id="upload-view">
+        <Row gutter={16}>
+          <Col span={20} offset={2}>
+            <div className="view-title">
+              图片上传 - <Icon type="caret-down" />
+            </div>
+            <div 
+              id="upload-area" 
+              className={ dragover ? 'is-dragover' : ''} 
+              onPaste={this.onPaste} onDrop={this.onDrop} 
+              onDragOver={this.onDragOver} 
+              onDragLeave={this.onDragLeave}
+            >
+              <div id="upload-dragger">
+                <Icon type="cloud-upload" />
+                <div className="upload-dragger__text">
+                  将文件拖到此处，或 <span>点击上传</span>
+                </div>
+                <input type="file" id="file-uploader" onChange={this.onChange} multiple />
+              </div>
+            </div>
+          </Col>
+        </Row>
       </div>
+
+      // <div className="App">
+      //   <header className="App-header">
+      //     <p>
+      //       Edit <code>src/App.js</code> and save to reload1234.
+      //     </p>
+      //     <a
+      //       className="App-link"
+      //       href="https://reactjs.org"
+      //       target="_blank"
+      //       rel="noopener noreferrer"
+      //     >
+      //       Learn React
+      //     </a>
+      //     <Button type="primary" className="test"></Button>
+      //     <div style={{width: 400, height: 400, background: 'red'}} onPaste={this.onPaste} onDrop={this.onDrop} onDragOver={this.onDragOver} onDragLeave={this.onDragLeave} >
+
+      //     </div>
+      //   </header>
+      // </div>
     );
   }
 }

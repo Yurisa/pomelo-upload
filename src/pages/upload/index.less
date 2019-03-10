@@ -1,37 +1,42 @@
-.App {
+.view-title {
+  color: #666666;
+  font-size:20px;
+  text-align: center;
+  margin: 10px auto;
+}
+
+#upload-view {
+  .view-title {
+    margin: 20px auto
+  }
+  #upload-area {
+    height: 220px;
+    border: 2px dashed #dddddd;
+    border-radius: 8px;
     text-align: center;
-  }
-  
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-    height: 40vmin;
-    pointer-events: none;
-  }
-  
-  .App-header {
-    background-color: #282c34;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
-  }
-  
-  .App-link {
-    color: #61dafb;
-  }
-  
-  @keyframes App-logo-spin {
-    from {
-      transform: rotate(0deg);
+    width: 450px;
+    margin: 0 auto;
+    color: #dddddd;
+    cursor: pointer;
+    transition: all .2s ease-in-out;
+    #upload-dragger {
+      height: 100%;
+      &.is-dragover, &:hover {
+        border: 2px dashed #A4D8FA;
+        background-color: rgba(164, 216, 250, 0.3);
+        color: #fff;
+      }
+      i {
+        font-size: 66px;
+        margin: 50px 0 16px;
+        line-height: 66px;
+      }
+      span {
+        color: #409EFF;
+      }
     }
-    to {
-      transform: rotate(360deg);
+    #file-uploader {
+      display: none;
     }
   }
-  
-  .test {
-    width: 200px;
-  }
+}
