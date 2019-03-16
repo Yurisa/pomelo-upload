@@ -12,7 +12,7 @@ class NavLeft extends React.Component {
   }
   // 菜单点击
   handleClick = ({ item, key }) => {
-    if (key == this.state.currentKey) {
+    if (key === this.state.currentKey) {
       return false;
     }
     // 事件派发，自动调用reducer，通过reducer保存到store对象中

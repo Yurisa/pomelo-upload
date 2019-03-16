@@ -1,6 +1,6 @@
 const menuList = [
   {
-    title: '图片上传',
+    title: '上传区',
     key: '/upload'
   },
   {

@@ -1,7 +1,24 @@
-const {app, Browserwindowdow, ipcMain, menubar, Tray, dialog} = require('electron')
+const {app, BrowserWindow, ipcMain, Tray, dialog, Menu, globalShortcut, clipboard} = require('electron')
 const path = require('path')
+const db = require('./datastore')
+const { getPicBeds } = require('./utils/getPicBeds')
 const url = require('url')
 const pkg = require('./package.json')
+
+
+/**
+ * Set `__static` path to static files in production
+ * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
+ */
+if (process.env.NODE_ENV !== 'development') {
+  global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+}
+if (process.env.DEBUG_ENV === 'debug') {
+  global.__static = require('path').join(__dirname, '../../static').replace(/\\/g, '\\\\')
+}
+if (process.env.NODE_ENV === 'development') {
+  global.__static = path.join(__dirname, '/public')
+}
 
 // 监听render进程消息
 ipcMain.on('asynchronous-message', (event, arg) => {
@@ -36,137 +53,410 @@ ipcMain.on('uploadChoosedFiles', async (evt, files) => {
   //     db.read().get('uploaded').insert(imgs[i]).write()
   //   }
   //   clipboard.writeText(pasteText)
-  //   windowdow.webContents.send('uploadFiles', imgs)
-  //   if (settingwindowdow) {
-  //     settingwindowdow.webContents.send('updateGallery')
+  //   window.webContents.send('uploadFiles', imgs)
+  //   if (settingwindow) {
+  //     settingwindow.webContents.send('updateGallery')
   //   }
   // }
 })
 
-// 保持一个对于 windowdow 对象的全局引用，如果你不这样做，
-// 当 JavaScript 对象被垃圾回收， windowdow 会被自动地关闭
-let miniwindowdow
-let settingwindowdow
+const winURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:3000/#/tray-page` : ''
+
+const settingWinURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:3000/#setting/upload` : ''
+
+const miniWinURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:3000/#mini-page` : ''
+// 保持一个对于 window 对象的全局引用，如果你不这样做，
+// 当 JavaScript 对象被垃圾回收， window 会被自动地关闭
+let miniWindow
+let settingWindow
 let window
 let tray
+let contextMenu
 
-function createwindowdow () {
-  // 创建浏览器窗口。
-  window = new Browserwindowdow({
-    width: 800, 
-    height: 600,
-    autoHideMenuBar: true,
-    fullscreenable: false,
-    webPreferences: {
+// function createWindow () {
+//   // 创建浏览器窗口。
+//   window = new BrowserWindow({
+//     width: 800, 
+//     height: 600,
+//     autoHideMenuBar: true,
+//     fullscreenable: false,
+//     webPreferences: {
+//       javascript: true,
+//       plugins: true,
+//       nodeIntegration: false, // 不集成 Nodejs
+//       webSecurity: false,
+//       preload: path.join(__dirname, './public/renderer.js') // 但预加载的 js 文件内仍可以使用 Nodejs 的 API
+//     }
+//   })
+
+//   // 然后加载应用的 index.html。
+//   // package中的DEV为true时，开启调试窗口。为false时使用编译发布版本
+//   if(process.env.NODE_ENV === 'development'){
+//     window.loadURL('http://localhost:3000/')
+//   }else{
+//     window.loadURL(url.format({
+//       pathname: path.join(__dirname, './build/index.html'),
+//       protocol: 'file:',
+//       slashes: true
+//     }))
+  
+//   }
+
+  /**
+   * 创建初始窗口
+   */
+  const createWindow = () => {
+    if (process.platform !== 'darwin' && process.platform !== 'win32') {
+      return
+    }
+    window = new BrowserWindow({
+      height: 350,
+      width: 196, // 196
+      show: false,
+      frame: false,
+      fullscreenable: false,
+      resizable: false,
+      transparent: true,
+      vibrancy: 'ultra-dark',
+      webPreferences: {
+        backgroundThrottling: false,
+        preload: path.join(__dirname, './public/renderer.js')
+      }
+    })
+  
+    window.loadURL(winURL)
+  
+    window.on('closed', () => {
+      window = null
+    })
+  
+    window.on('blur', () => {
+      window.hide()
+    })
+  }
+
+  /**
+   * 创建小窗口
+   */
+  const createMiniWidow = () => {
+    if (miniWindow) {
+      return false
+    }
+    let obj = {
+      height: 64,
+      width: 64,
+      show: true,
+      frame: false,
+      fullscreenable: false,
+      skipTaskbar: true,
+      resizable: false,
+      transparent: true,
+      icon: `/publ/logo.png`,
+      webPreferences: {
+        backgroundThrottling: false,
+        preload: path.join(__dirname, './public/renderer.js')
+      }
+    }
+  
+    if (process.platform === 'linux') {
+      obj.transparent = false
+    }
+  
+    if (process.platform === 'darwin') {
+      obj.show = false
+    }
+  
+    if (db.read().get('settings.miniWindowOntop').value()) {
+      obj.alwaysOnTop = true
+    }
+  
+    miniWindow = new BrowserWindow(obj)
+  
+    miniWindow.loadURL(miniWinURL)
+  
+    miniWindow.on('closed', () => {
+      miniWindow = null
+    })
+  }
+
+  /**
+   * 创建详细窗口
+   */
+  const createSettingWindow = () => {
+    const options = {
+      height: 450,
+      width: 800,
+      show: false,
+      frame: true,
+      center: true,
+      fullscreenable: false,
+      resizable: false,
+      title: 'pomelo-upload',
+      vibrancy: 'ultra-dark',
+      transparent: true,
+      titleBarStyle: 'hidden',
+      webPreferences: {
+        backgroundThrottling: false,
         javascript: true,
         plugins: true,
         nodeIntegration: false, // 不集成 Nodejs
         webSecurity: false,
-        preload: path.join(__dirname, './public/renderer.js') // 但预加载的 js 文件内仍可以使用 Nodejs 的 API
+        preload: path.join(__dirname, './public/renderer.js')
+      }
+    }
+    settingWindow = new BrowserWindow(options)
+  
+    settingWindow.loadURL(settingWinURL)
+  
+    settingWindow.on('closed', () => {
+      settingWindow = null
+      if (process.platform === 'linux') {
+        app.quit()
+      }
+    })
+    createMenu()
+    createMiniWidow()
+  }
+
+  /**
+   * 创建菜单
+   */
+  const createMenu = () => {
+    if (process.env.NODE_ENV !== 'development') {
+      const template = [{
+        label: 'Edit',
+        submenu: [
+          { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
+          { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
+          { type: 'separator' },
+          { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
+          { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
+          { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
+          { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
+          {
+            label: 'Quit',
+            accelerator: 'CmdOrCtrl+Q',
+            click () {
+              app.quit()
+            }
+          }
+        ]
+      }]
+      menu = Menu.buildFromTemplate(template)
+      Menu.setApplicationMenu(menu)
+    }
+  }
+
+
+function createContextMenu () {
+  const picBeds = getPicBeds(app)
+  const submenu = picBeds.map(item => {
+    return {
+      label: item.name,
+      type: 'radio',
+      checked: db.read().get('picBed.current').value() === item.type,
+      click () {
+        db.read().set('picBed.current', item.type).write()
+        if (settingWindow) {
+          settingWindow.webContents.send('syncPicBed')
+        }
+      }
+    }
+  })
+  contextMenu = Menu.buildFromTemplate([
+    {
+      label: '关于',
+      click () {
+        dialog.showMessageBox({
+          title: 'PicGo',
+          message: 'PicGo',
+          detail: `Version: ${pkg.version}\nAuthor: Molunerfinn\nGithub: https://github.com/Molunerfinn/PicGo`
+        })
+      }
+    },
+    {
+      label: '打开详细窗口',
+      click () {
+        if (settingWindow === null) {
+          createSettingWindow()
+          settingWindow.show()
+        } else {
+          settingWindow.show()
+          settingWindow.focus()
+        }
+        if (miniWindow) {
+          miniWindow.hide()
+        }
+      }
+    },
+    {
+      label: '选择默认图床',
+      type: 'submenu',
+      submenu
+    },
+    {
+      label: '打开更新助手',
+      type: 'checkbox',
+      checked: db.get('settings.showUpdateTip').value(),
+      click () {
+        const value = db.read().get('settings.showUpdateTip').value()
+        db.read().set('settings.showUpdateTip', !value).write()
+      }
+    },
+    {
+      label: '重启应用',
+      click () {
+        app.relaunch()
+        app.exit(0)
+      }
+    },
+    {
+      role: 'quit',
+      label: '退出'
+    }
+  ])
+}
+
+function createTray () {
+  const menubarPic = process.platform === 'darwin' ? `${__static}/asset/logo.png` : ''
+  tray = new Tray(menubarPic)
+  tray.on('right-click', () => {
+    if (window) {
+      window.hide()
+    }
+    createContextMenu()
+    tray.popUpContextMenu(contextMenu)
+  })
+  tray.on('click', (event, bounds) => {
+    if (process.platform === 'darwin') {
+      let img = clipboard.readImage()
+      let obj = []
+      if (!img.isEmpty()) {
+        // 从剪贴板来的图片默认转为png
+        const imgUrl = 'data:image/png;base64,' + Buffer.from(img.toPNG(), 'binary').toString('base64')
+        obj.push({
+          width: img.getSize().width,
+          height: img.getSize().height,
+          imgUrl
+        })
+      }
+      toggleWindow(bounds)
+      setTimeout(() => {
+        window.webContents.send('clipboardFiles', obj)
+      }, 0)
+    } else {
+      if (window) {
+        window.hide()
+      }
+      if (settingWindow === null) {
+        createSettingWindow()
+        settingWindow.show()
+      } else {
+        settingWindow.show()
+        settingWindow.focus()
+      }
+      if (miniWindow) {
+        miniWindow.hide()
+      }
     }
   })
 
-  // 然后加载应用的 index.html。
-  // package中的DEV为true时，开启调试窗口。为false时使用编译发布版本
-  if(pkg.DEV){
-    window.loadURL('http://localhost:3000/')
-  }else{
-    window.loadURL(url.format({
-      pathname: path.join(__dirname, './build/index.html'),
-      protocol: 'file:',
-      slashes: true
-    }))
-  }
+  tray.on('drag-enter', () => {
+    tray.setImage(`${__static}/asset/upload.png`)
+  })
 
-  function createContextMenu() {
-    contextMenu = Menu.buildTemplate([
-      {
-        label: '关于',
-        click () {
-          dialog.showMessageBox({
-            title: 'PicGo',
-            message: 'PicGo',
-            detail: `Version: ${pkg.version}\nAuthor: Molunerfinn\nGithub: https://github.com/Molunerfinn/PicGo`
-          })
-        }
-      },
-      {
-        label: '打开详细窗口',
-        click () {
-          if (settingwindowdow === null) {
-            createSettingwindowdow()
-            settingwindowdow.show()
-          } else {
-            settingwindowdow.show()
-            settingwindowdow.focus()
-          }
-          if (miniwindowdow) {
-            miniwindowdow.hide()
-          }
-        }
-      },
-      {
-        label: '选择默认图床',
-        type: 'submenu',
-        // submenu
-      },
-      {
-        label: '打开更新助手',
-        type: 'checkbox',
-        // checked: db.get('settings.showUpdateTip').value(),
-        // click () {
-        //   const value = db.read().get('settings.showUpdateTip').value()
-        //   db.read().set('settings.showUpdateTip', !value).write()
-        // }
-      },
-      {
-        label: '重启应用',
-        click () {
-          app.relaunch()
-          app.exit(0)
-        }
-      },
-      {
-        role: 'quit',
-        label: '退出'
+  tray.on('drag-end', () => {
+    tray.setImage(`${__static}/asset/logo.png`)
+  })
+
+  tray.on('drop-files', async (event, files) => {
+    const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
+    const imgs = await new Uploader(files, window.webContents).upload()
+    if (imgs !== false) {
+      for (let i in imgs) {
+        const url = imgs[i].url || imgs[i].imgUrl
+        clipboard.writeText(pasteTemplate(pasteStyle, url))
+        const notification = new Notification({
+          title: '上传成功',
+          body: imgs[i].imgUrl,
+          icon: files[i]
+        })
+        setTimeout(() => {
+          notification.show()
+        }, i * 100)
+        db.read().get('uploaded').insert(imgs[i]).write()
       }
-    ])
+      window.webContents.send('dragFiles', imgs)
+    }
+  })
+  // toggleWindow()
+}
+
+const toggleWindow = (bounds) => {
+  if (window.isVisible()) {
+    window.hide()
+  } else {
+    showWindow(bounds)
   }
+}
+
+
+const showWindow = (bounds) => {
+  window.setPosition(bounds.x - 98 + 11, bounds.y, false)
+  window.webContents.send('updateFiles')
+  window.show()
+  window.focus()
+}
+
 
   // 打开开发者工具。
   // window.webContents.openDevTools()
 
-  // 当 windowdow 被关闭，这个事件会被触发。
-  window.on('closed', () => {
-    // 取消引用 windowdow 对象，如果你的应用支持多窗口的话，
-    // 通常会把多个 windowdow 对象存放在一个数组里面，
-    // 与此同时，你应该删除相应的元素。
-    window = null
-  })
-}
-
 // Electron 会在初始化后并准备
 // 创建浏览器窗口时，调用这个函数。
 // 部分 API 在 ready 事件触发后才能使用。
-app.on('ready', createwindowdow)
+app.on('ready', () => {
+  createWindow()
+  createSettingWindow()
+  if (process.platform === 'darwin' || process.platform === 'win32') {
+    createTray()
+  }
+  db.read().set('needReload', false).write()
+  // updateChecker()
+
+  globalShortcut.register(db.read().get('settings.shortKey.upload').value(), () => {
+    uploadClipboardFiles()
+  })
+})
 
 // 当全部窗口关闭时退出。
-app.on('windowdow-all-closed', () => {
+app.on('window-all-closed', () => {
   // 在 macOS 上，除非用户用 Cmd + Q 确定地退出，
   // 否则绝大部分应用及其菜单栏会保持激活。
-  if (process.platform !== 'darwindow') {
+  if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
 app.on('activate', () => {
-  // 在macOS上，当单击dock图标并且没有其他窗口打开时，
-  // 通常在应用程序中重新创建一个窗口。
   if (window === null) {
-    createwindowdow()
+    createWindow()
+  }
+  if (settingWindow === null) {
+    createSettingWindow()
   }
 })
 
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})
+
+app.setLoginItemSettings({
+  openAtLogin: db.read().get('settings.autoStart').value() || false
+})
 // 在这文件，你可以续写应用剩下主进程代码。
 // 也可以拆分成几个文件，然后用 require 导入。
 // 在这里可以添加一些electron相关的其他模块，比如nodejs的一些原生模块
