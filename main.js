@@ -1,7 +1,7 @@
 const {app, BrowserWindow, ipcMain, Tray, dialog, Menu, globalShortcut, clipboard} = require('electron')
 const path = require('path')
-const db = require('./datastore')
-const { getPicBeds } = require('./utils/getPicBeds')
+const db = require('./src/datastore')
+const { getPicBeds } = require('./src/mainUtils/getPicBeds')
 const url = require('url')
 const pkg = require('./package.json')
 
@@ -118,7 +118,7 @@ let contextMenu
       show: false,
       frame: false,
       fullscreenable: false,
-      resizable: false,
+      resizable: true,
       transparent: true,
       vibrancy: 'ultra-dark',
       webPreferences: {

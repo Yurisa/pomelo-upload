@@ -2,8 +2,10 @@
 import { createStore } from 'redux';
 // 引入所有的reducer
 import reducer from './../reducer';
+// import db from '../../datastore';
+
 const initialState = {
-  menuName: ''
+  menuName: '',
 }
 const configureStore = () => createStore(reducer, initialState);
 
