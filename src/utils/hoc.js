@@ -4,6 +4,7 @@ function hoc(ComponentClass) {
   return class Hoc extends Component {
 
     componentDidMount() {
+      console.log('高阶组件挂载');
       this.disableDragEvent();
     }
 

@@ -1,6 +1,6 @@
-import db from '../datastore'
 
-export default (style, url) => {
+
+module.exports = (db, style, url) => {
   const customLink = db.read().get('settings.customLink').value() || '$url'
   const tpl = {
     'markdown': `![](${url})`,
