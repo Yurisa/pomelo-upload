@@ -2797,7 +2797,7 @@ date-now@^0.1.4:
   version "0.1.4"
   resolved "http://registry.npm.taobao.org/date-now/download/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
 
-dayjs@^1.7.4:
+dayjs@^1.7.4, dayjs@^1.8.10:
   version "1.8.10"
   resolved "http://registry.npm.taobao.org/dayjs/download/dayjs-1.8.10.tgz#fc35a976ccac2a9c44b50485a06c4a5ecf5d1b37"
 

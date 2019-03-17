@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "antd": "^3.13.6",
+    "dayjs": "^1.8.10",
     "less": "^3.9.0",
     "less-loader": "^4.1.0",
     "lodash-id": "^0.14.0",

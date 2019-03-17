@@ -6,10 +6,10 @@ const fs = require('fs-extra')
 const { remote, app } = require('electron')
 
 if (process.env.NODE_ENV !== 'development') {
-  global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
+  global.__static = path.join(__dirname, '/public').replace(/\\/g, '\\\\')
 }
 if (process.env.DEBUG_ENV === 'debug') {
-  global.__static = path.join(__dirname, '../../static').replace(/\\/g, '\\\\')
+  global.__static = path.join(__dirname, '../../public').replace(/\\/g, '\\\\')
 }
 
 const APP = process.type === 'renderer' ? remote.app : app
@@ -72,7 +72,7 @@ function getClipboardFiles () {
 
   return files.map(item => {
     return {
-      origin: path.join(__dirname, '../public', item),
+      origin: path.join(__dirname, '../../public', item),
       dest: path.join(STORE_PATH, item)
     }
   })

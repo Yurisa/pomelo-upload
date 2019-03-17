@@ -110,26 +110,6 @@ class Upload extends Component {
           </Col>
         </Row>
       </div>
-
-      // <div className="App">
-      //   <header className="App-header">
-      //     <p>
-      //       Edit <code>src/App.js</code> and save to reload1234.
-      //     </p>
-      //     <a
-      //       className="App-link"
-      //       href="https://reactjs.org"
-      //       target="_blank"
-      //       rel="noopener noreferrer"
-      //     >
-      //       Learn React
-      //     </a>
-      //     <Button type="primary" className="test"></Button>
-      //     <div style={{width: 400, height: 400, background: 'red'}} onPaste={this.onPaste} onDrop={this.onDrop} onDragOver={this.onDragOver} onDragLeave={this.onDragLeave} >
-
-      //     </div>
-      //   </header>
-      // </div>
     );
   }
 }

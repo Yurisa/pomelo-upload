@@ -1,9 +1,11 @@
-const {app, BrowserWindow, ipcMain, Tray, dialog, Menu, globalShortcut, clipboard} = require('electron')
+const {app, BrowserWindow, ipcMain, Tray, dialog, Menu, globalShortcut, clipboard, Notification} = require('electron')
 const path = require('path')
-const db = require('./datastore')
-const { getPicBeds } = require('./utils/getPicBeds')
+const db = require('./src/datastore')
+const { getPicBeds } = require('./src/mainUtils/getPicBeds')
 const url = require('url')
 const pkg = require('./package.json')
+const Uploader = require('./src/mainUtils/upload');
+const pasteTemplate = require('./src/mainUtils/pasteTemplate')
 
 
 /**
@@ -118,7 +120,7 @@ let contextMenu
       show: false,
       frame: false,
       fullscreenable: false,
-      resizable: false,
+      resizable: true,
       transparent: true,
       vibrancy: 'ultra-dark',
       webPreferences: {
@@ -378,7 +380,7 @@ function createTray () {
     if (imgs !== false) {
       for (let i in imgs) {
         const url = imgs[i].url || imgs[i].imgUrl
-        clipboard.writeText(pasteTemplate(pasteStyle, url))
+        clipboard.writeText(pasteTemplate(db, pasteStyle, url))
         const notification = new Notification({
           title: '上传成功',
           body: imgs[i].imgUrl,
