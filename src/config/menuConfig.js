@@ -1,11 +1,11 @@
 const menuList = [
   {
     title: '上传区',
-    key: '/upload'
+    key: '/setting/upload'
   },
   {
     title: '相册',
-    key: '/gallery'
+    key: '/setting/gallery'
   }
 ];
 export default menuList;
