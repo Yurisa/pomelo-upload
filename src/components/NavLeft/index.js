@@ -56,7 +56,7 @@ class NavLeft extends React.Component {
   render() {
     return (
       <div>
-        <NavLink to="/upload" onClick={this.homeHandleClick}>
+        <NavLink to="/setting/upload" onClick={this.homeHandleClick}>
           <div className="logo">
             <img src="/asset/logo-pomelo.svg" alt="" />
             <h1>Pomelo</h1>

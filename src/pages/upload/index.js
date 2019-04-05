@@ -3,8 +3,7 @@ import { Row, Col, Icon } from 'antd';
 import './index.less';
 
 const electron = window.electron;
-const {ipcRenderer} = electron;
-
+const { ipcRenderer } = electron;
 
 class Upload extends Component {
 
@@ -13,10 +12,9 @@ class Upload extends Component {
   }
 
   componentDidMount() {
-    console.log('挂载完毕');
-    ipcRenderer.on('uploadProgress', (event, progress) => {
-      console.log(progress);
-    });
+    // ipcRenderer.on('uploadProgress', (event, progress) => {
+    //   console.log(progress);
+    // });
   }
 
   onDrop = (e) => {
@@ -24,7 +22,6 @@ class Upload extends Component {
     this.setState({
       dragover: false
     });
-    console.log('file1', e.dataTransfer.files);
     this.ipcSendFiles(e.dataTransfer.files)
   }
 
@@ -43,24 +40,7 @@ class Upload extends Component {
   }
 
   onPaste = (e) => {
-    e.preventDefault();
-    const items = e.clipboardData && e.clipboardData.items;
-    let files = [];
-    let file = null;
-    if (items && items.length) {
-      for(let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          file = items[i].getAsFile();
-          break;
-        }
-      }
-    }
-    const reader = new FileReader();
-    debugger
-    reader.onload = function(e) {
-      const base64_str = e.target.result;
-    }
-    reader.readAsDataURL(file); 
+    this.uploadClipboardFiles()
   }
 
   onChange = (e) => {
@@ -77,8 +57,11 @@ class Upload extends Component {
       }
       sendFiles.push(obj)
     });
-    console.log(sendFiles);
     ipcRenderer.send('uploadChoosedFiles', sendFiles);
+  }
+
+  uploadClipboardFiles () {
+    ipcRenderer.send('uploadClipboardFiles')
   }
 
   
@@ -95,7 +78,8 @@ class Upload extends Component {
             <div 
               id="upload-area" 
               className={ dragover ? 'is-dragover' : ''} 
-              onPaste={this.onPaste} onDrop={this.onDrop} 
+              onPaste={this.onPaste} 
+              onDrop={this.onDrop} 
               onDragOver={this.onDragOver} 
               onDragLeave={this.onDragLeave}
             >

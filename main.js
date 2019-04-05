@@ -22,46 +22,6 @@ if (process.env.NODE_ENV === 'development') {
   global.__static = path.join(__dirname, '/public')
 }
 
-// 监听render进程消息
-ipcMain.on('asynchronous-message', (event, arg) => {
-  console.log(arg) // prints "ping"
-  event.sender.send('asynchronous-reply', 'pong')
-})
-
-ipcMain.on('synchronous-message', (event, arg) => {
-  console.log(arg) // prints "ping"
-  event.returnValue = 'pong'
-})
-
-
-ipcMain.on('uploadChoosedFiles', async (evt, files) => {
-  const input = files.map(item => item.path)
-  console.log('input', input);
-  // const imgs = await new Uploader(input, evt.sender).upload()
-  // if (imgs !== false) {
-  //   const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
-  //   let pasteText = ''
-  //   for (let i in imgs) {
-  //     const url = imgs[i].url || imgs[i].imgUrl
-  //     pasteText += pasteTemplate(pasteStyle, url) + '\r\n'
-  //     const notification = new Notification({
-  //       title: '上传成功',
-  //       body: imgs[i].imgUrl,
-  //       icon: files[i].path
-  //     })
-  //     setTimeout(() => {
-  //       notification.show()
-  //     }, i * 100)
-  //     db.read().get('uploaded').insert(imgs[i]).write()
-  //   }
-  //   clipboard.writeText(pasteText)
-  //   window.webContents.send('uploadFiles', imgs)
-  //   if (settingwindow) {
-  //     settingwindow.webContents.send('updateGallery')
-  //   }
-  // }
-})
-
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:3000/#/tray-page` : ''
 
@@ -194,7 +154,7 @@ let contextMenu
       show: false,
       frame: true,
       center: true,
-      fullscreenable: false,
+      fullscreenable: true,
       resizable: false,
       title: 'pomelo-upload',
       vibrancy: 'ultra-dark',
@@ -203,7 +163,6 @@ let contextMenu
       webPreferences: {
         backgroundThrottling: false,
         javascript: true,
-        plugins: true,
         nodeIntegration: false, // 不集成 Nodejs
         webSecurity: false,
         preload: path.join(__dirname, './public/renderer.js')
@@ -332,6 +291,8 @@ function createTray () {
     createContextMenu()
     tray.popUpContextMenu(contextMenu)
   })
+
+  // 打开tray时进行剪切板的图片预览
   tray.on('click', (event, bounds) => {
     if (process.platform === 'darwin') {
       let img = clipboard.readImage()
@@ -374,6 +335,9 @@ function createTray () {
     tray.setImage(`${__static}/asset/logo.png`)
   })
 
+  /**
+   * 小图标拖拽上传
+   */
   tray.on('drop-files', async (event, files) => {
     const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
     const imgs = await new Uploader(files, window.webContents).upload()
@@ -395,6 +359,78 @@ function createTray () {
     }
   })
   // toggleWindow()
+}
+
+/**
+ * 主界面上传处理函数
+ */
+ipcMain.on('uploadChoosedFiles', async (evt, files) => {
+  const input = files.map(item => item.path)
+  const imgs = await new Uploader(input, evt.sender).upload()
+  if (imgs !== false) {
+    const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
+    let pasteText = ''
+    for (let i in imgs) {
+      const url = imgs[i].url || imgs[i].imgUrl
+      pasteText += pasteTemplate(db, pasteStyle, url) + '\r\n'
+      const notification = new Notification({
+        title: '上传成功',
+        body: imgs[i].imgUrl,
+        icon: files[i].path
+      })
+      setTimeout(() => {
+        notification.show()
+      }, i * 100)
+      db.read().get('uploaded').insert(imgs[i]).write()
+    }
+    clipboard.writeText(pasteText)
+    window.webContents.send('uploadFiles', imgs) // 向托盘上传发送一个图片
+    if (settingWindow) {
+      settingWindow.webContents.send('updateGallery')
+    }
+  }
+})
+
+ipcMain.on('uploadClipboardFiles', () => {
+  uploadClipboardFiles()
+})
+
+/**
+ * 上传剪切板文件
+ */
+const uploadClipboardFiles = async () => {
+  let win
+  if (miniWindow.isVisible()) {
+    win = miniWindow
+  } else {
+    win = settingWindow || window
+  }
+  let img = await new Uploader(undefined, win.webContents).upload()
+  if (img !== false) {
+    if (img.length > 0) {
+      const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
+      const url = img[0].url || img[0].imgUrl
+      clipboard.writeText(pasteTemplate(db, pasteStyle, url))
+      const notification = new Notification({
+        title: '上传成功',
+        body: img[0].imgUrl,
+        icon: img[0].imgUrl // 此处有区别
+      })
+      notification.show()
+      db.read().get('uploaded').insert(img[0]).write()
+      window.webContents.send('clipboardFiles', []) // 将traypage等待上传的文件数组清空
+      window.webContents.send('uploadFiles', img)
+      if (settingWindow) {
+        settingWindow.webContents.send('updateGallery')
+      }
+    } else {
+      const notification = new Notification({
+        title: '上传不成功',
+        body: '你剪贴板最新的一条记录不是图片哦'
+      })
+      notification.show()
+    }
+  }
 }
 
 const toggleWindow = (bounds) => {
@@ -427,7 +463,6 @@ app.on('ready', () => {
     createTray()
   }
   db.read().set('needReload', false).write()
-  // updateChecker()
 
   globalShortcut.register(db.read().get('settings.shortKey.upload').value(), () => {
     uploadClipboardFiles()
