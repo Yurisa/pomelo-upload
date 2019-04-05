@@ -7,7 +7,6 @@ const pkg = require('./package.json')
 const Uploader = require('./src/mainUtils/upload');
 const pasteTemplate = require('./src/mainUtils/pasteTemplate')
 
-
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
