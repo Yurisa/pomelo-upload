@@ -3,6 +3,15 @@
 ul,li{
     list-style: none;
 }
+
+body {
+    -webkit-app-region: drag; // 无边框窗口可以拖动
+}
+
+button {
+    -webkit-app-region: no-drag; // 在窗口可拖动情况下保持按钮不可拖动，否则将不可点击
+}
+
 .clearfix{
     &::after{
         content:' ';
