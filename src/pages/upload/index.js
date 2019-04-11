@@ -64,8 +64,6 @@ class Upload extends Component {
     ipcRenderer.send('uploadClipboardFiles')
   }
 
-  
-
   render() {
     const { dragover } = this.state;
     return (

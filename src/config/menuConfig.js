@@ -6,6 +6,10 @@ const menuList = [
   {
     title: '相册',
     key: '/setting/gallery'
+  },
+  {
+    title: '正在上传',
+    key: '/setting/uploading'
   }
 ];
 export default menuList;

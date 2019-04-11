@@ -5,6 +5,7 @@ import Layout from '../layout';
 import Upload from '../pages/upload';
 import Gallery from '../pages/gallery';
 import TrayPage from '../pages/traypage';
+import Uploading from '../pages/uploading'
 
 export default class ERouter extends React.Component {
   render() {
@@ -20,6 +21,7 @@ export default class ERouter extends React.Component {
                     <Fragment>
                       <Route path='/setting/upload' component={Upload} />
                       <Route path='/setting/gallery' component={Gallery} />
+                      <Route path='/setting/uploading' component={Uploading} />
                     </Fragment>
                   )} />
                   <Redirect to="/setting/upload" />
