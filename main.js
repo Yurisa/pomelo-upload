@@ -364,31 +364,39 @@ function createTray () {
  * 主界面上传处理函数
  */
 ipcMain.on('uploadChoosedFiles', async (evt, files) => {
-  const input = files.map(item => item.path)
-  const imgs = await new Uploader(input, evt.sender).upload()
-  if (imgs !== false) {
-    const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
-    let pasteText = ''
-    for (let i in imgs) {
-      const url = imgs[i].url || imgs[i].imgUrl
-      pasteText += pasteTemplate(db, pasteStyle, url) + '\r\n'
-      const notification = new Notification({
-        title: '上传成功',
-        body: imgs[i].imgUrl,
-        icon: files[i].path
-      })
-      setTimeout(() => {
-        notification.show()
-      }, i * 100)
-      db.read().get('uploaded').insert(imgs[i]).write()
-    }
-    clipboard.writeText(pasteText)
-    window.webContents.send('uploadFiles', imgs) // 向托盘上传发送一个图片
-    if (settingWindow) {
-      settingWindow.webContents.send('updateGallery')
-    }
+  // const input = files.map(item => item.path)
+  // const imgs = await new Uploader(input, evt.sender).upload()
+  // if (imgs !== false) {
+  //   const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
+  //   let pasteText = ''
+  //   for (let i in imgs) {
+  //     const url = imgs[i].url || imgs[i].imgUrl
+  //     pasteText += pasteTemplate(db, pasteStyle, url) + '\r\n'
+  //     const notification = new Notification({
+  //       title: '上传成功',
+  //       body: imgs[i].imgUrl,
+  //       icon: files[i].path
+  //     })
+  //     setTimeout(() => {
+  //       notification.show()
+  //     }, i * 100)
+  //     db.read().get('uploaded').insert(imgs[i]).write()
+  //   }
+  //   clipboard.writeText(pasteText)
+  //   window.webContents.send('uploadFiles', imgs) // 向托盘上传发送一个图片
+  //   if (settingWindow) {
+  //     settingWindow.webContents.send('updateGallery')
+  //   }
+  // }
+  console.log('运行到这里');
+  console.log(files);
+  console.log(settingWindow)
+  if (settingWindow) {
+    settingWindow.webContents.send('bigFileUpload', files)
+    settingWindow.send('message', 'pong')
   }
 })
+
 
 ipcMain.on('uploadClipboardFiles', () => {
   uploadClipboardFiles()
