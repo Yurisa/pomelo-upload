@@ -1,10 +1,10 @@
-import React from 'react'
-import { Menu } from 'antd';
-import { NavLink } from 'react-router-dom'
-import { connect } from 'react-redux'
-import { switchMenu } from './../../redux/action'
-import MenuConfig from './../../config/menuConfig'
-import './index.less'
+import React from 'react';
+import { Menu, Icon } from 'antd';
+import { NavLink } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { switchMenu } from './../../redux/action';
+import MenuConfig from './../../config/menuConfig';
+import './index.less';
 const SubMenu = Menu.SubMenu;
 class NavLeft extends React.Component {
   state = {
@@ -42,7 +42,10 @@ class NavLeft extends React.Component {
         )
       }
       return <Menu.Item title={item.title} key={item.key}>
-        <NavLink to={item.key}>{item.title}</NavLink>
+        <NavLink to={item.key}>
+          <Icon type={item.icon} />
+          <span>{item.title}</span>
+        </NavLink>
       </Menu.Item>
     })
   }
@@ -65,6 +68,7 @@ class NavLeft extends React.Component {
         <Menu
           onClick={this.handleClick}
           theme="dark"
+          mode="inline"
         >
           {this.state.menuTreeNode}
         </Menu>
