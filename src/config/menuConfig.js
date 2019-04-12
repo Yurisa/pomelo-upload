@@ -1,15 +1,33 @@
 const menuList = [
   {
     title: '上传区',
-    key: '/setting/upload'
+    key: '/setting/upload',
+    icon: 'cloud-upload'
+  },
+  {
+    title: '全部文件',
+    key: '/setting/all-files',
+    icon: 'laptop'
   },
   {
     title: '相册',
-    key: '/setting/gallery'
+    key: '/setting/gallery',
+    icon: 'picture'
   },
   {
-    title: '正在上传',
-    key: '/setting/uploading'
+    title: '文档',
+    key: '/setting/document',
+    icon: 'file-text'
+  },
+  {
+    title: '视频',
+    key: '/setting/vedio',
+    icon: 'video-camera'
+  },
+  {
+    title: '音乐',
+    key: '/setting/music',
+    icon: 'customer-service'
   }
 ];
 export default menuList;

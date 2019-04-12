@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import SparkMD5 from 'spark-md5';
-import { Progress, Icon, Row, Col } from 'antd';
+import { Progress, Icon } from 'antd';
 import './index.less';
 
 const blobSlice = File.prototype.slice;
@@ -17,24 +17,24 @@ class UploadFile extends Component {
     currentChunk: 0,
     isGetMD5: false,
     uploadPrgInnerText: 0,
-    uploadBtnValue : '上传',
     fileIndex: 0,
     status: 'progressing' // 三个状态 progressing interrupted completed
   }
 
-  init = (e) => {
-    const file = e.target.files[0];
-    this.setState({
-      fileIndex: 0,
-      currentChunk: 0,
-      uploadPrgInnerText: 0,
-      uploadBtnValue : '上传',
-      file: file,
-      fileSize: file.size,
-      chunks: Math.ceil(file.size / chunkSize)
-    }, () => {
-      this.loadBlob(this.state.file)
-    })
+  componentDidMount() {
+    const file = this.props.file;
+    if (file) {
+      this.setState({
+        fileIndex: 0,
+        currentChunk: 0,
+        uploadPrgInnerText: 0,
+        file: file,
+        fileSize: file.size,
+        chunks: Math.ceil(file.size / chunkSize)
+      }, () => {
+        this.loadBlob(this.state.file)
+      })
+    }
   }
 
   sliceChunks = () => {
@@ -76,7 +76,8 @@ class UploadFile extends Component {
               isGetMD5: true
             }
           }, () => {
-            loadNext = spark = null
+            loadNext = spark = null;
+            this.upload()
           });
         }
       }
@@ -122,10 +123,22 @@ class UploadFile extends Component {
         this.setState({
           uploadPrgInnerText : (fileIndex * 10000) / (chunks * 100)
         }, () => {
-          fileIndex === chunks && this.setState({
-            uploadBtnValue: '上传完成',
-            status: 'completed'
-          });
+          if(fileIndex === chunks) {
+            this.setState({
+              status: 'completed',
+              file: undefined
+            });
+            setTimeout(() => {
+              const notification = new window.Notification('上传完成', {
+                title: '上传完成',
+                body: '您有1个任务上传完成',
+              });
+              notification.onClick = () => {
+                console.log('notify')
+              }
+              this.props.onFinished(this.props.index);
+            }, 500)
+          }
         });
       }
 
@@ -140,7 +153,6 @@ class UploadFile extends Component {
               fileIndex: 0,
               currentChunk: 0,
               uploadPrgInnerText: 100,
-              uploadBtnValue: '上传完成',
               status: 'completed'
             })
           } else {
@@ -166,7 +178,6 @@ class UploadFile extends Component {
       return
     }
     this.setState({
-      uploadBtnValue: '继续上传',
       status: 'interrupted'
     })
   }
@@ -185,20 +196,7 @@ class UploadFile extends Component {
     if (status === 'progressing') {
       return 'pause'
     } 
-    return 'play-circle';
-    // this.setState((preState) => {
-    //   switch (preState.status) {
-    //     case 'progressing':
-    //       return { status: 'interrupted'}
-    //       break;
-    //     case 'interrupted': 
-    //       return { status: 'progressing' }
-    //       break;
-    //     default:
-    //       return preState
-    //   }
-    // }
-    
+    return 'play-circle';    
   }
 
   taskTips = () => {
@@ -215,8 +213,8 @@ class UploadFile extends Component {
   }
 
   render() {
-    const { uploadPrgInnerText, uploadBtnValue, file, status } = this.state;
-    return (
+    const { uploadPrgInnerText, file, status } = this.state;
+    return file ? (
       <div className="task-item">
         <div className="task-name">
           {`${this.taskTips()}   ${file && file.name || ''}`}
@@ -233,13 +231,8 @@ class UploadFile extends Component {
             percent={uploadPrgInnerText}
             status="active"/>
         </div>
-          {/* <h2>文件上传</h2>
-          <input type="file" name="test" id="uploadFile" onChange={this.init}/>
-          <input type="button" value={uploadBtnValue} id="upload"  onClick={this.upload} style={{color: '#000000'}}/>
-          <input type="button" value="暂停" id="pause"  style={{color: '#000000'}}/>
-          <p>上传进度：<span id="uploadPrg">{uploadPrgInnerText}</span></p> */}
-      </div>
-    )
+      </div> 
+    ): null
   }
 }
 

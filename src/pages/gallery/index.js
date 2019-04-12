@@ -37,13 +37,11 @@ export default class Gallery extends React.Component {
   }
 
   componentWillMount() {
-    ipcRenderer.on('updateGallery', (event) => {
-      setTimeout(() => {
-        this.filterList = this.getGallery()
-      }, 200);
-    })
-    ipcRenderer.send('getPicBeds');
-    ipcRenderer.on('getPicBeds', this.getPicBeds);
+    setTimeout(() => {
+      this.setState({
+        filterList: this.getGallery()
+      })
+    }, 200);
   }
 
   getPicBeds (event, picBeds) {
@@ -53,41 +51,23 @@ export default class Gallery extends React.Component {
   }
 
   getGallery = () => {
-    const { choosedPicBed, searchText } = this.state
-    if (choosedPicBed.length > 0) {
-      let arr = [];
-      choosedPicBed.forEach(item => {
-        let obj = {
-          type: item
-        }
-        if (searchText) {
-          obj.fileName = searchText;
-        }
-        arr = arr.concat(db.read().get('uploaded').filter(obj => {
-          return obj.fileName.indexOf(searchText) !== -1 && obj.type === item
-        }).reverse().value());
-      });
+    const { searchText } = this.state
+    if (searchText) {
+      let data = db.read().get('uploaded')
+        .filter(item => {
+          return item.fileName.indexOf(searchText) !== -1
+        }).reverse().value();
       this.setState({
-        images: arr
+        images: data
       })
-      return arr;
+      return data
     } else {
-      if (searchText) {
-        let data = db.read().get('uploaded')
-          .filter(item => {
-            return item.fileName.indexOf(searchText) !== -1
-          }).reverse().value();
-        this.setState({
-          images: data
-        })
-        return data
-      } else {
-        let data = db.read().get('uploaded').slice().reverse().value();
-        this.setState({
-          images: data
-        });
-        return data
-      }
+      console.log('读取上传图片');
+      let data = db.read().get('uploaded').slice().reverse().value();
+      this.setState({
+        images: data
+      });
+      return data
     }
   }
 
@@ -108,7 +88,6 @@ export default class Gallery extends React.Component {
   }
 
   zoomImage = (index) => {
-    console.log('inex', index);
     this.setState({
       idx: index
     }, () => {
@@ -171,7 +150,7 @@ export default class Gallery extends React.Component {
   }
 
   render() {
-    const { filterList, handleBarActive, choosedPicBed, pasteStyle, pasteStyleMap, choosedList, idx, images, galleryOpened } = this.state;
+    const { filterList, handleBarActive, pasteStyle, pasteStyleMap, choosedList, idx, images, galleryOpened } = this.state;
     const photos = this.processImages(images);
     return (
       <div id="gallery-view">
