@@ -1,7 +1,13 @@
 @import './default.less';
 @import './loading.less';
-ul,li{
-    list-style: none;
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-family: "Microsoft YaHei";
 }
 
 body {
@@ -11,6 +17,7 @@ body {
 button {
     -webkit-app-region: no-drag; // 在窗口可拖动情况下保持按钮不可拖动，否则将不可点击
 }
+
 
 .clearfix{
     &::after{
@@ -30,6 +37,7 @@ button {
         height: calc(100vh);
         background-image: linear-gradient(to right, #172426, #000);
         overflow: auto;
+        -webkit-app-region: no-drag; 
     }
     .content{
         position: relative;
