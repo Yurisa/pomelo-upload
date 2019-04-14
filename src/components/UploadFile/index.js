@@ -154,7 +154,9 @@ class UploadFile extends Component {
               currentChunk: 0,
               uploadPrgInnerText: 100,
               status: 'completed'
-            })
+            });
+            console.log('index', this.props.index)
+            this.props.onFinished(this.props.index);
           } else {
             this.setState({
               currentChunk: ++currentChunk

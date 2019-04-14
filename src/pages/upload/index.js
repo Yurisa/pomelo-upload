@@ -68,10 +68,14 @@ class Upload extends Component {
   }
 
   onFinished = (index) => {
-    const { uploadList } = this.state;
-    uploadList.splice(index, 1, undefined);
-    this.setState({
-      uploadList
+    console.log('执行')
+
+    this.setState(preState => {
+      const { uploadList } = preState;
+      uploadList.splice(index, 1, undefined);
+      return {
+        uploadList
+      }
     })
   }
 
@@ -97,6 +101,7 @@ class Upload extends Component {
   }
   render() {
     const { dragover, uploadList } = this.state;
+    console.log(uploadList);
     return (
       <Tabs defaultActiveKey="1" onChange={this.handleChange} tabBarStyle={{color: '#eeeeee'}}>
         <TabPane tab="上传区" key="1">
@@ -134,7 +139,7 @@ class Upload extends Component {
             transitionLeaveTimeout={300}
           >
             {
-              uploadList.length > 0 
+              uploadList.filter(file => file).length > 0 
               ? uploadList.map((file, index) => (
                 <UploadFile key={index} file={file} index={index} onFinished={this.onFinished}/>
               )) : <span style={{color: '#eeeeee'}}>暂无上传任务</span>
