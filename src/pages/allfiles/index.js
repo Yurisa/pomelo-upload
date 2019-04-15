@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import { Tabs, Menu, Dropdown } from 'antd';
 import MouseMenu from '../../components/MouseMenu';
+import DownloadFile from '../../components/DownloadFile'
 import './index.less';
 
 const TabPane = Tabs.TabPane;
 const db = window.db;
+const electron = window.electron;
+const { ipcRenderer } = electron;
 
 const DiskData = {
   ClipboardType: false,//剪切板是复制还是剪切
@@ -30,9 +33,36 @@ class AllFiles extends Component {
 
   state = {
     data: [],
+    TransformData: [],
   }
 
   componentDidMount() {
+    ipcRenderer.on('download', (e, file) => {
+      const { TransformData } = this.state;
+      for (let i = 0; i < TransformData.length; i++) {
+        if (file.name === TransformData[i].name) {
+          setTimeout(() => {
+            for (let name in TransformData[i]) {
+              this.setState(preState => {
+                const { TransformData } = preState;
+                TransformData[i][name] = file[name];
+                return {
+                  TransformData
+                }
+              });
+            }
+          }, 50);
+          return;
+        } 
+      }
+      this.setState(preState => {
+        const { TransformData } = preState;
+        TransformData.push(file)
+        return {
+          TransformData
+        }
+      });
+    });
     window.addEventListener('keydown', (e) => {
       e.stopPropagation();
       DiskData.KeyFlag = e.key;
@@ -41,6 +71,10 @@ class AllFiles extends Component {
       DiskData.KeyFlag = null;
     })
     this.getFiles();
+  }
+
+  mergeFile = () => {
+    
   }
 
   componentWillUnmount() {
@@ -147,16 +181,58 @@ class AllFiles extends Component {
     switch(command) {
       case 'download': 
         const downloadFiles = this.state.data.filter(item => item.active);
-        console.log(downloadFiles);
+        downloadFiles.forEach(file => {
+          electron.remote.getCurrentWindow().webContents.downloadURL(file.imgUrl);
+        });
         break;
       default :
         break; 
     }
   }
 
+  ControlTrans = (event, file, index) => {
+    event.persist()
+    if (event.target.dataset.icon === 'close') {
+      if(file.trans_type==='download'){
+        ipcRenderer.send('download', 'cancel', file.id);
+      }else{
+        this.deleteTransformData(index);
+      }
+      return;
+    }
+    if (file.state === 'completed') {
+      this.deleteTransformData(index);
+    } else {
+      let command=(file.state === 'progressing') ? 'pause':'resume';
+      ipcRenderer.send('download', command, file.id);
+    }
+  }
+
+  deleteTransformData = (index) => {
+    this.setState(preState => {
+      const { TransformData } = preState;
+      TransformData.splice(index, 1);
+      return {
+        TransformData
+      }
+    });
+  }
+
+  renderDownloadingab = () => {
+    const { TransformData } = this.state;
+    const len = TransformData.filter(item => item).length;
+    return (
+      <div>
+      正在下载  {len ? <span className="downloadListNum">
+            {len}
+          </span> : null
+        }
+      </div>
+    )
+  }
 
   render() {
-    const { data } = this.state;
+    const { data, TransformData } = this.state;
     const files = this.processData(data);
     return (
       <Tabs defaultActiveKey="1" onChange={this.handleChange} tabBarStyle={{color: '#eeeeee'}}>
@@ -178,7 +254,12 @@ class AllFiles extends Component {
           </div>
         <MouseMenu node={this.refs.main} ref="MouseMenu" handleClick={this.handleClick}/>
         </TabPane>
-        <TabPane tab="正在下载" key="2">
+        <TabPane tab={this.renderDownloadingab()} key="2">
+          {
+            TransformData.map((file, index) => {
+              return <DownloadFile file={file} index={index} ControlTrans={this.ControlTrans}/>
+            })
+          }
         </TabPane>
       </Tabs>
     )

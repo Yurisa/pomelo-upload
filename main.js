@@ -1,11 +1,14 @@
-const {app, BrowserWindow, ipcMain, Tray, dialog, Menu, globalShortcut, clipboard, Notification} = require('electron')
-const path = require('path')
-const db = require('./src/datastore')
-const { getPicBeds } = require('./src/mainUtils/getPicBeds')
-const url = require('url')
-const pkg = require('./package.json')
+const {app, BrowserWindow, ipcMain, Tray, dialog, session, Menu, globalShortcut, clipboard, Notification} = require('electron')
+const path = require('path');
+const db = require('./src/datastore');
+const { getPicBeds } = require('./src/mainUtils/getPicBeds');
+const url = require('url');
+const pkg = require('./package.json');
 const Uploader = require('./src/mainUtils/upload');
-const pasteTemplate = require('./src/mainUtils/pasteTemplate')
+const pasteTemplate = require('./src/mainUtils/pasteTemplate');
+
+let TransDownFolder = '/Users/hdd/Project/pomelo-upload/downloadFiles';  // 下载文件保存地址
+let DownloadList={};  // 下载文件列表
 
 /**
  * Set `__static` path to static files in production
@@ -66,6 +69,65 @@ let contextMenu
   
 //   }
 
+/*窗口控制函数*/
+let WindowControl={
+    New:(options)=>{
+        Menu.setApplicationMenu(null);
+        let win = new BrowserWindow({
+            width: options.width||800,
+            height: options.height||600,
+            minWidth: options.minWidth,
+            minHeight: options.minHeight,
+            title:options.title||'pomelo-upload',
+            frame:false,
+            useContentSize:options.useContentSize||false,
+            transparent:options.transparent||false,
+            x:options.x,
+            y:options.y,
+            minimizable:options.minimizable === undefined ? true : options.minimizable,
+            maximizable:options.maximizable === undefined ? true : options.maximizable,
+            resizable:options.resizable === undefined ? true : options.resizable,
+            alwaysOnTop:options.alwaysOnTop === undefined ? false : options.alwaysOnTop,
+            show:false,
+            webPreferences:{
+                webSecurity:(process.env.NODE_ENV === 'development')?false:true
+            }
+        });
+        options.backgroundColor&&(win.backgroundColor=options.backgroundColor);
+        win.name=options.url;
+        win.loadURL(WindowControl.CheckRouter(options.url));
+        win.callback=(data)=>{
+            win.webContents.send('win-data',data);
+            (typeof options.callback==='function')?options.callback():"";
+        };
+        win.on('closed', (event)=> {
+            win=null;
+            (typeof options.onclose==='function')?options.onclose(event):"";
+        });
+        win.on('ready-to-show',(event)=>{
+            win.show();
+            win.focus();
+            (typeof options.ready==='function')?options.ready(event):"";
+        });
+        win.webContents.on('did-finish-load',()=>{
+            win.setTitle(options.title || 'pomelo-upload');
+            win.callback(options.data||'无数据');
+        });
+        return win;
+    },
+    CheckRouter:(router)=>{
+        return process.env.NODE_ENV === 'development'
+            ? `http://localhost:9080/#/`+router
+            : `file://${__dirname}/index.html#/`+router;
+    },
+    Active:(win,data)=>{
+        if(win) {
+            win.show();
+            win.focus();
+            win.callback(data);
+        }
+    }
+};
   /**
    * 创建初始窗口
    */
@@ -176,9 +238,36 @@ let contextMenu
       if (process.platform === 'linux') {
         app.quit()
       }
-    })
-    createMenu()
-    createMiniWidow()
+    });
+    /**
+     * 
+     * electron下载功能
+     */
+
+    session.defaultSession.removeAllListeners('will-download');
+    session.defaultSession.on('will-download', (event, item, webContents) => {
+      console.log('item', TransDownFolder, item.getFilename());
+      let name = item.getFilename();
+      item.fileName = name;
+      item.path=TransDownFolder+'/'+name;
+      item.setSavePath(TransDownFolder+'/'+name); // 设置保存路径,使Electron不提示保存对话框。
+      item.on('updated', (event, state) => {
+          DownloadList[Math.round(item.getStartTime())] = item;
+          let file = FileObject(item,item.isPaused() ? 'interrupted' : false);
+          webContents&&webContents.send( 'download', file);
+      });
+      item.once('done', (event, state) => {
+        let file=FileObject(item,item.isPaused() ? 'interrupted' : false);
+        webContents&&webContents.send('download' , file);
+        if (state === 'completed') {
+          delete DownloadList[Math.round(item.getStartTime())];
+        } else {
+          onsole.log(`Download failed: ${state}`)
+        }
+      })
+    });
+    createMenu();
+    createMiniWidow();
   }
 
   /**
@@ -437,6 +526,46 @@ const uploadClipboardFiles = async () => {
       })
       notification.show()
     }
+  }
+}
+
+ /*下载事件控制*/
+ ipcMain.on('download',(event,type,data)=>{
+  let downloadItem=DownloadList[data];
+  if(downloadItem===undefined){
+      return
+  }
+  switch (type) {
+      case 'pause':
+          downloadItem.pause();
+          break;
+      case 'cancel':
+          downloadItem.cancel();
+          break;
+      case 'resume':
+          if(downloadItem.canResume()){
+              downloadItem.resume();
+          }
+          break;
+  }
+});
+
+
+/*网盘函数*/
+function FileObject(item,state){
+  return {
+      id:Math.round(item.getStartTime()),
+      url:item.getURLChain(),
+      time:item.getStartTime(),
+      name:item.fileName,
+      path:item.path,
+      chunk:item.getReceivedBytes(),
+      size:item.getTotalBytes(),
+      trans_type: 'download',
+      state:state||item.getState(),
+      disk_main:item.getURL(),
+      canResume:item.canResume(),
+      shows:true,
   }
 }
 
