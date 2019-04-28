@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain, Tray, dialog, session, Menu, globalShortcut, clipboard, Notification} = require('electron')
+const {app, BrowserWindow, ipcMain, Tray, dialog, session, Menu, globalShortcut, clipboard, Notification, nativeImage} = require('electron')
 const path = require('path');
 const db = require('./src/datastore');
 const { getPicBeds } = require('./src/mainUtils/getPicBeds');
@@ -39,7 +39,37 @@ let settingWindow
 let window
 let tray
 let contextMenu
+let MusicPlayer
 let PdfWindow
+/*播放按钮*/
+let PlayerIcon = path.join(__static, '/img/player');
+let NextBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'next.png'));
+let PlayBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'play.png'));
+let PauseBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'pause.png'));
+let PrevBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'prev.png'));
+let MusicButtons = [
+  {
+    tooltip: '上一首',
+    icon: PrevBtn,
+    click: () => {
+      MusicPlayer.webContents.send('Prev');
+    }
+  },
+  {
+    tooltip: '播放',
+    icon: PlayBtn,
+    click: () => {
+      MusicPlayer.webContents.send('Play');
+    }
+  },
+  {
+    tooltip: '下一首',
+    icon: NextBtn,
+    click: () => {
+      MusicPlayer.webContents.send('Next');
+    }
+  }
+];
 
 // function createWindow () {
 //   // 创建浏览器窗口。
@@ -73,7 +103,6 @@ let PdfWindow
 /*窗口控制函数*/
 let WindowControl = {
   New: (options) => {
-    Menu.setApplicationMenu(null);
     let win = new BrowserWindow({
       width: options.width || 800,
       height: options.height || 600,
@@ -147,9 +176,9 @@ let FileViewer = {
       title: '音乐播放器',
       width: 350,
       height: 535,
-      maximizable: false,
-      minimizable: false,
-      resizable: false,
+      // maximizable: false,
+      // minimizable: false,
+      // resizable: false,
       onclose: () => {
         MusicPlayer = null;
       },
@@ -608,24 +637,49 @@ const uploadClipboardFiles = async () => {
   }
 }
 
+/*播放器操作事件*/
+ipcMain.on('player-control', (event, type, data) => {
+  switch (type) {
+    case 'audio':
+      if (data === 'pause') {
+        MusicButtons[1].icon = PauseBtn;
+        MusicButtons[1].tooltip = '暂停'
+      } else {
+        MusicButtons[1].icon = PlayBtn;
+        MusicButtons[1].tooltip = '播放'
+      }
+      MusicPlayer.setThumbarButtons(MusicButtons);
+      break;
+    case 'video':
+      if (data === 'pause') {
+        VideoButtons[0].icon = PauseBtn;
+        VideoButtons[0].tooltip = '暂停'
+      } else {
+        VideoButtons[0].icon = PlayBtn;
+        VideoButtons[0].tooltip = '播放'
+      }
+      VideoPlayer.setThumbarButtons(VideoButtons);
+      break;
+  }
+});
  /*下载事件控制*/
- ipcMain.on('download',(event,type,data)=>{
-  let downloadItem=DownloadList[data];
-  if(downloadItem===undefined){
-      return
+ipcMain.on('download', (event, type, data) => {
+  let downloadItem = DownloadList[data];
+  if (downloadItem === undefined) {
+    return
   }
   switch (type) {
-      case 'pause':
-          downloadItem.pause();
-          break;
-      case 'cancel':
-          downloadItem.cancel();
-          break;
-      case 'resume':
-          if(downloadItem.canResume()){
-              downloadItem.resume();
-          }
-          break;
+    case 'pause':
+      downloadItem.pause();
+      break;
+    case 'cancel':
+      downloadItem.cancel();
+      break;
+    case 'resume':
+      if (downloadItem.canResume()) {
+        downloadItem.resume();
+      }
+      break;
   }
 });
 

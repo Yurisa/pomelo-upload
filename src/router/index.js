@@ -17,6 +17,7 @@ export default class ERouter extends React.Component {
           <Switch>
             <Route path='/tray-page' component={TrayPage} />
             <Route path='/pdf-viewer' component={Pdf} />
+            <Route path="/music-player" component={Music} />
             <Route path="/" render={() => 
               <Layout>
                 <Switch>
@@ -25,7 +26,6 @@ export default class ERouter extends React.Component {
                       <Route path='/setting/upload' component={Upload} />
                       <Route path='/setting/gallery' component={Gallery} />
                       <Route path='/setting/all-files' component={AllFiles} />
-                      <Route path="/setting/music-viewer" component={Music} />
                     </Fragment>
                   )} />
                   <Redirect to="/setting/upload" />
