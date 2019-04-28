@@ -6,6 +6,12 @@ import './index.less';
 const blobSlice = File.prototype.slice;
 const chunkSize = 1024 * 1024 * 4; // 4MB一块
 
+    // 通过 cookie 获取 csrf token
+function getCsrf() {
+  var keyValue = document.cookie.match('(^|;) ?csrfToken=([^;]*)(;|$)');
+  return keyValue ? keyValue[2] : null;
+}
+
 class UploadFile extends Component {
 
   state = {
@@ -142,7 +148,7 @@ class UploadFile extends Component {
         });
       }
 
-      xhr.open("POST", 'http://localhost:8080/upload');
+      xhr.open("POST", `http://localhost:7001/upload`);
 
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -155,7 +161,6 @@ class UploadFile extends Component {
               uploadPrgInnerText: 100,
               status: 'completed'
             });
-            console.log('index', this.props.index)
             this.props.onFinished(this.props.index);
           } else {
             this.setState({

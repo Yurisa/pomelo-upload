@@ -21,7 +21,7 @@ if (process.env.DEBUG_ENV === 'debug') {
   global.__static = require('path').join(__dirname, '../../static').replace(/\\/g, '\\\\')
 }
 if (process.env.NODE_ENV === 'development') {
-  global.__static = path.join(__dirname, '/public')
+  global.__static = path.join(__dirname, '/public').replace(/\\/g, '\\\\')
 }
 
 const winURL = process.env.NODE_ENV === 'development'
@@ -39,6 +39,7 @@ let settingWindow
 let window
 let tray
 let contextMenu
+let PdfWindow
 
 // function createWindow () {
 //   // 创建浏览器窗口。
@@ -70,96 +71,217 @@ let contextMenu
 //   }
 
 /*窗口控制函数*/
-let WindowControl={
-    New:(options)=>{
-        Menu.setApplicationMenu(null);
-        let win = new BrowserWindow({
-            width: options.width||800,
-            height: options.height||600,
-            minWidth: options.minWidth,
-            minHeight: options.minHeight,
-            title:options.title||'pomelo-upload',
-            frame:false,
-            useContentSize:options.useContentSize||false,
-            transparent:options.transparent||false,
-            x:options.x,
-            y:options.y,
-            minimizable:options.minimizable === undefined ? true : options.minimizable,
-            maximizable:options.maximizable === undefined ? true : options.maximizable,
-            resizable:options.resizable === undefined ? true : options.resizable,
-            alwaysOnTop:options.alwaysOnTop === undefined ? false : options.alwaysOnTop,
-            show:false,
-            webPreferences:{
-                webSecurity:(process.env.NODE_ENV === 'development')?false:true
-            }
-        });
-        options.backgroundColor&&(win.backgroundColor=options.backgroundColor);
-        win.name=options.url;
-        win.loadURL(WindowControl.CheckRouter(options.url));
-        win.callback=(data)=>{
-            win.webContents.send('win-data',data);
-            (typeof options.callback==='function')?options.callback():"";
-        };
-        win.on('closed', (event)=> {
-            win=null;
-            (typeof options.onclose==='function')?options.onclose(event):"";
-        });
-        win.on('ready-to-show',(event)=>{
-            win.show();
-            win.focus();
-            (typeof options.ready==='function')?options.ready(event):"";
-        });
-        win.webContents.on('did-finish-load',()=>{
-            win.setTitle(options.title || 'pomelo-upload');
-            win.callback(options.data||'无数据');
-        });
-        return win;
-    },
-    CheckRouter:(router)=>{
-        return process.env.NODE_ENV === 'development'
-            ? `http://localhost:9080/#/`+router
-            : `file://${__dirname}/index.html#/`+router;
-    },
-    Active:(win,data)=>{
-        if(win) {
-            win.show();
-            win.focus();
-            win.callback(data);
-        }
-    }
-};
-  /**
-   * 创建初始窗口
-   */
-  const createWindow = () => {
-    if (process.platform !== 'darwin' && process.platform !== 'win32') {
-      return
-    }
-    window = new BrowserWindow({
-      height: 350,
-      width: 196, // 196
+let WindowControl = {
+  New: (options) => {
+    Menu.setApplicationMenu(null);
+    let win = new BrowserWindow({
+      width: options.width || 800,
+      height: options.height || 600,
+      minWidth: options.minWidth,
+      minHeight: options.minHeight,
+      title: options.title || 'pomelo-upload',
+      frame: true,
+      useContentSize: options.useContentSize || false,
+      transparent: options.transparent || false,
+      x: options.x,
+      y: options.y,
+      minimizable: options.minimizable === undefined ? true : options.minimizable,
+      maximizable: options.maximizable === undefined ? true : options.maximizable,
+      resizable: options.resizable === undefined ? true : options.resizable,
+      alwaysOnTop: options.alwaysOnTop === undefined ? false : options.alwaysOnTop,
       show: false,
-      frame: false,
-      fullscreenable: false,
-      resizable: true,
-      transparent: true,
-      vibrancy: 'ultra-dark',
       webPreferences: {
-        backgroundThrottling: false,
+        webSecurity: (process.env.NODE_ENV === 'development') ? false : true,
         preload: path.join(__dirname, './public/renderer.js')
       }
-    })
-  
-    window.loadURL(winURL)
-  
-    window.on('closed', () => {
-      window = null
-    })
-  
-    window.on('blur', () => {
-      window.hide()
-    })
+    });
+    options.backgroundColor && (win.backgroundColor = options.backgroundColor);
+    win.name = options.url;
+    if (options.title === 'PDF阅读器') {
+      win.loadURL(`http://localhost:3000/` + options.url)
+    } else {
+      win.loadURL(WindowControl.CheckRouter(options.url));
+    }
+    win.callback = (data) => {
+      win.webContents.send('win-data', data);
+      (typeof options.callback === 'function') ? options.callback() : "";
+    };
+    win.on('closed', (event) => {
+      win = null;
+      (typeof options.onclose === 'function') ? options.onclose(event) : "";
+    });
+    win.on('ready-to-show', (event) => {
+      win.show();
+      win.focus();
+      (typeof options.ready === 'function') ? options.ready(event) : "";
+    });
+    win.webContents.on('did-finish-load', () => {
+      win.setTitle(options.title || 'pomelo-upload');
+      win.callback(options.data || '无数据');
+    });
+    return win;
+  },
+  CheckRouter: (router) => {
+    return process.env.NODE_ENV === 'development'
+      ? `http://localhost:3000/#/` + router
+      : `file://${__dirname}/index.html#/` + router;
+  },
+  Active: (win, data) => {
+    if (win) {
+      win.show();
+      win.focus();
+      win.callback(data);
+    }
   }
+};
+
+/*文件窗口函数*/
+let FileViewer = {
+  Music: (data) => {
+    if (MusicPlayer) {
+      return WindowControl.Active(MusicPlayer, data);
+    }
+    MusicPlayer = WindowControl.New({
+      url: 'music-player',
+      data: data,
+      title: '音乐播放器',
+      width: 350,
+      height: 535,
+      maximizable: false,
+      minimizable: false,
+      resizable: false,
+      onclose: () => {
+        MusicPlayer = null;
+      },
+      callback: () => {
+        MusicPlayer.setThumbarButtons(MusicButtons);
+      }
+    });
+  },
+  Video: (data) => {
+    if (VideoPlayer) {
+      return WindowControl.Active(VideoPlayer, data);
+    }
+    VideoPlayer = WindowControl.New({
+      url: 'video-player',
+      data: data,
+      title: '视频播放器',
+      width: 750,
+      height: 500,
+      minHeight: 350,
+      minWidth: 500,
+      onclose: () => {
+        VideoPlayer = null;
+      },
+      callback: () => {
+        VideoPlayer.setThumbarButtons(VideoButtons);
+      }
+    });
+  },
+  Image: (data) => {
+    if (PictureViewer) {
+      return WindowControl.Active(PictureViewer, data);
+    }
+    PictureViewer = WindowControl.New({
+      url: 'picture-shower',
+      data: data,
+      title: '图片查看',
+      width: 750,
+      height: 500,
+      minHeight: 350,
+      minWidth: 500,
+      backgroundColor: '#4f4f4f',
+      onclose: () => {
+        PictureViewer = null;
+      }
+    });
+  },
+  Pdf: (data) => {
+    if (PdfWindow) {
+      return WindowControl.Active(PdfWindow, data);
+    }
+    PdfWindow = WindowControl.New({
+      url: `pdf/web/viewer.html?file=${data.downloadUrl}`,
+      data: data,
+      title: 'PDF阅读器',
+      width: 750,
+      height: 500,
+      minHeight: 350,
+      minWidth: 500,
+      backgroundColor: '#4f4f4f',
+      onclose: () => {
+        PdfWindow = null;
+      }
+    });
+  },
+  Text: (data) => {
+    if (FileWindow) {
+      return WindowControl.Active(FileWindow, data);
+    }
+    FileWindow = WindowControl.New({
+      url: 'file-shower',
+      data: data,
+      title: '文件查看',
+      width: 750,
+      height: 500,
+      minHeight: 350,
+      minWidth: 500,
+      onclose: () => {
+        FileWindow = null;
+      }
+    });
+  },
+  Attributes: (data) => {
+    if (DiskInfo) {
+      return WindowControl.Active(DiskInfo, data);
+    }
+    DiskInfo = WindowControl.New({
+      url: 'info',
+      data: data,
+      width: 600,
+      height: 390,
+      title: '文件属性',
+      maximizable: false,
+      minimizable: false,
+      resizable: false,
+      onclose: () => {
+        DiskInfo = null;
+      }
+    });
+  }
+};
+/**
+ * 创建初始窗口
+ */
+const createWindow = () => {
+  if (process.platform !== 'darwin' && process.platform !== 'win32') {
+    return
+  }
+  window = new BrowserWindow({
+    height: 350,
+    width: 196, // 196
+    show: false,
+    frame: false,
+    fullscreenable: false,
+    resizable: true,
+    transparent: true,
+    vibrancy: 'ultra-dark',
+    webPreferences: {
+      backgroundThrottling: false,
+      preload: path.join(__dirname, './public/renderer.js')
+    }
+  })
+
+  window.loadURL(winURL)
+
+  window.on('closed', () => {
+    window = null
+  })
+
+  window.on('blur', () => {
+    window.hide()
+  })
+}
 
   /**
    * 创建小窗口
@@ -342,11 +464,6 @@ function createContextMenu () {
       }
     },
     {
-      label: '选择默认图床',
-      type: 'submenu',
-      submenu
-    },
-    {
       label: '打开更新助手',
       type: 'checkbox',
       checked: db.get('settings.showUpdateTip').value(),
@@ -449,44 +566,6 @@ function createTray () {
   // toggleWindow()
 }
 
-/**
- * 主界面上传处理函数
- */
-ipcMain.on('uploadChoosedFiles', async (evt, files) => {
-  // const input = files.map(item => item.path)
-  // const imgs = await new Uploader(input, evt.sender).upload()
-  // if (imgs !== false) {
-  //   const pasteStyle = db.read().get('settings.pasteStyle').value() || 'markdown'
-  //   let pasteText = ''
-  //   for (let i in imgs) {
-  //     const url = imgs[i].url || imgs[i].imgUrl
-  //     pasteText += pasteTemplate(db, pasteStyle, url) + '\r\n'
-  //     const notification = new Notification({
-  //       title: '上传成功',
-  //       body: imgs[i].imgUrl,
-  //       icon: files[i].path
-  //     })
-  //     setTimeout(() => {
-  //       notification.show()
-  //     }, i * 100)
-  //     db.read().get('uploaded').insert(imgs[i]).write()
-  //   }
-  //   clipboard.writeText(pasteText)
-  //   window.webContents.send('uploadFiles', imgs) // 向托盘上传发送一个图片
-  //   if (settingWindow) {
-  //     settingWindow.webContents.send('updateGallery')
-  //   }
-  // }
-  console.log('运行到这里');
-  console.log(files);
-  console.log(settingWindow)
-  if (settingWindow) {
-    settingWindow.webContents.send('bigFileUpload', files)
-    settingWindow.send('message', 'pong')
-  }
-})
-
-
 ipcMain.on('uploadClipboardFiles', () => {
   uploadClipboardFiles()
 })
@@ -550,6 +629,30 @@ const uploadClipboardFiles = async () => {
   }
 });
 
+/*网盘文件操作事件*/
+ipcMain.on('file-control', (event, type, data) => {
+  switch (type) {
+    case 'audio'://音频
+      FileViewer.Music(data);
+      break;
+    case 'video'://视频
+      FileViewer.Video(data);
+      break;
+    case 'image'://图片
+      FileViewer.Image(data);
+      break;
+    case 'pdf':
+      FileViewer.Pdf(data);
+      break;
+    case 'text'://文本
+      FileViewer.Text(data);
+      break;
+    case 'attributes'://属性
+      FileViewer.Attributes(data);
+      break;
+
+  }
+});
 
 /*网盘函数*/
 function FileObject(item,state){

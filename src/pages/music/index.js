@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import './index.less';
 
-class AllFiles extends Component {
+class Music extends Component {
   render() {
-    return null
+    return (
+      <div className="cd-music-player-main" style={{width: 200, height: 300}}>
+        <audio ref="audio" src="http://localhost:7001/public/uploads/大碗宽面.mp3" autoPlay id="audio"></audio>
+      </div>
+    )
   }
 }
 
-export default AllFiles;
+export default Music;
