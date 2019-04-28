@@ -257,7 +257,17 @@ class AllFiles extends Component {
   openFile = (item) => {
     console.log('触发双击')
     if (item.file_suffix) {
-      ipcRenderer.send('file-control', item.file_suffix, item)
+      const { file_suffix } = item;
+      let openType = null;
+      let data = [];
+      if (file_suffix === 'pdf') {
+        openType = 'pdf';
+        ipcRenderer.send('file-control', openType, item)
+      } else if (file_suffix === 'mp3') {
+        openType = 'audio';
+        data.push(item);
+        ipcRenderer.send('file-control', openType, data)
+      }
     } else {
       alert('暂不支持打开此类型')
     }
