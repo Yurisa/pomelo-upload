@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Tabs, Menu, Dropdown } from 'antd';
+import { Tabs } from 'antd';
+import axios from 'axios';
 import MouseMenu from '../../components/MouseMenu';
-import DownloadFile from '../../components/DownloadFile'
+import DownloadFile from '../../components/DownloadFile';
 import './index.less';
 
+const domain = 'http://localhost:7001';
 const TabPane = Tabs.TabPane;
 const db = window.db;
 const electron = window.electron;
@@ -73,10 +75,6 @@ class AllFiles extends Component {
     this.getFiles();
   }
 
-  mergeFile = () => {
-    
-  }
-
   componentWillUnmount() {
     window.removeEventListener('keydown', (e) => {
       e.KeyFlag = null;
@@ -92,16 +90,41 @@ class AllFiles extends Component {
 
   processData = (data) => {
     data.forEach(d => {
-      d.icon = '/asset/filetype/ImageType.png'
+      if (d.file_suffix) {
+        const { file_suffix } = d;
+        d.fileName = d.file_name;
+        d.downloadUrl = `${domain}${d.file_path}`
+        if (file_suffix === 'xls') {
+          d.icon = '/asset/filetype/ExcelType.png';
+        } else if (file_suffix === 'doc' || file_suffix === 'docx') {
+          d.icon = '/asset/filetype/DocType.png';
+        } else if (file_suffix === 'pdf') {
+          d.icon = '/asset/filetype/PdfType.png';
+        } else if (file_suffix === 'mp4') {
+          d.icon = '/asset/filetype/VideoType.png';
+        } else if (file_suffix === 'rar') {
+          d.icon = '/asset/filetype/RarType.png';
+        } else if (file_suffix === 'ppt' || file_suffix === 'pptx') {
+          d.icon = '/asset/filetype/PptType.png';
+        } else if (file_suffix === 'svg' || file_suffix === 'png' || file_suffix === 'jpg') {
+          d.icon = '/asset/filetype/ImageType.png';
+        } else {
+          d.icon = '/asset/filetype/OtherType.png';
+        }
+      } else if (d.imgUrl) {
+        d.downloadUrl = d.imgUrl;
+        d.icon = '/asset/filetype/ImageType.png';
+      } 
     });
     return data;
   }
 
 
-  getFiles = () => {
-    let data = db.read().get('uploaded').slice().reverse().value();
+  getFiles = async () => {
+    let data1 = db.read().get('uploaded').slice().reverse().value();
+    let { data: data2} = await axios.get(`${domain}/upload-files`);
     this.setState({
-      data: data
+      data: data2.reverse().concat(data1)
     });
   }
 
@@ -182,7 +205,7 @@ class AllFiles extends Component {
       case 'download': 
         const downloadFiles = this.state.data.filter(item => item.active);
         downloadFiles.forEach(file => {
-          electron.remote.getCurrentWindow().webContents.downloadURL(file.imgUrl);
+          electron.remote.getCurrentWindow().webContents.downloadURL(file.downloadUrl);
         });
         break;
       default :
@@ -231,6 +254,15 @@ class AllFiles extends Component {
     )
   }
 
+  openFile = (item) => {
+    console.log('触发双击')
+    if (item.file_suffix) {
+      ipcRenderer.send('file-control', item.file_suffix, item)
+    } else {
+      alert('暂不支持打开此类型')
+    }
+  }
+
   render() {
     const { data, TransformData } = this.state;
     const files = this.processData(data);
@@ -242,9 +274,14 @@ class AllFiles extends Component {
               files.length > 0 && files.map((item, index) => {
                 const {fileName, icon} = item;
                 return (
-                  <div className={`cd-disk-block-file ${item.active ? 'cd-disk-block-file-active' : null}`} key={index} onMouseDown={e => this.selectFiles(e, item, index)}>
+                  <div 
+                    className={`cd-disk-block-file ${item.active ? 'cd-disk-block-file-active' : null}`} 
+                    key={`${fileName}_${index}`} 
+                    onMouseDown={e => this.selectFiles(e, item, index)}
+                    onDoubleClick={() => this.openFile(item)}
+                  >
                     <span className="icon">
-                      <img src={icon} />  
+                      <img src={icon} alt=""/>  
                     </span>
                     <p>{fileName}</p>   
                   </div>              

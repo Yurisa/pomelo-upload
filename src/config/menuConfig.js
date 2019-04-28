@@ -26,7 +26,7 @@ const menuList = [
   },
   {
     title: '音乐',
-    key: '/setting/music',
+    key: '/setting/music-viewer',
     icon: 'customer-service'
   }
 ];

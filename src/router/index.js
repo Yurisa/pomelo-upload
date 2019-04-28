@@ -6,6 +6,8 @@ import Upload from '../pages/upload';
 import AllFiles from '../pages/allfiles';
 import Gallery from '../pages/gallery';
 import TrayPage from '../pages/traypage';
+import Pdf from '../pages/pdf';
+import Music from '../pages/music'
 
 export default class ERouter extends React.Component {
   render() {
@@ -14,6 +16,7 @@ export default class ERouter extends React.Component {
         <App>
           <Switch>
             <Route path='/tray-page' component={TrayPage} />
+            <Route path='/pdf-viewer' component={Pdf} />
             <Route path="/" render={() => 
               <Layout>
                 <Switch>
@@ -22,6 +25,7 @@ export default class ERouter extends React.Component {
                       <Route path='/setting/upload' component={Upload} />
                       <Route path='/setting/gallery' component={Gallery} />
                       <Route path='/setting/all-files' component={AllFiles} />
+                      <Route path="/setting/music-viewer" component={Music} />
                     </Fragment>
                   )} />
                   <Redirect to="/setting/upload" />
