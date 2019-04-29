@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import './index.less';
 
 class MusicList extends Component {
-  state = {
-    PlayList: []
-  }
 
   ClickPlay = (item, index) => {
+    const { PlayList } = this.props;
+    PlayList.forEach((list)=>{
+      list.play=false;
+    });
     item.play='active';
     this.props.play(item, index)
   }
@@ -18,7 +19,7 @@ class MusicList extends Component {
         {
           PlayList.map((item, index) => {
             const { play, disk_name } = item;
-            return <li key={index} className={play} onClick={() => this.ClickPlay(item,index)}>{index < 9?'0':''}{index+1} {disk_name}</li>
+            return <li key={index} className={play ? 'active' : ''} onClick={() => this.ClickPlay(item,index)}>{index < 9?'0':''}{index+1} {disk_name}</li>
           })
         }
       </ul>

@@ -23,11 +23,11 @@ const DiskData = {
   Type: 'disk',//头部分类标签,
   ClassifyName: '网盘',//地址栏左侧分类显示文本,
   DiskSize: { /*网盘大小*/
-      total: 0,
-      use: 0,
-      Percent: '0%',
-      Background: '#2682fc',
-      text: '0B/0B',
+    total: 0,
+    use: 0,
+    Percent: '0%',
+    Background: '#2682fc',
+    text: '0B/0B',
   },
 }
 
@@ -108,6 +108,8 @@ class AllFiles extends Component {
           d.icon = '/asset/filetype/PptType.png';
         } else if (file_suffix === 'svg' || file_suffix === 'png' || file_suffix === 'jpg') {
           d.icon = '/asset/filetype/ImageType.png';
+        } else if (file_suffix === 'mp3') {
+          d.icon = '/asset/filetype/MusicType.png'
         } else {
           d.icon = '/asset/filetype/OtherType.png';
         }
@@ -208,6 +210,8 @@ class AllFiles extends Component {
           electron.remote.getCurrentWindow().webContents.downloadURL(file.downloadUrl);
         });
         break;
+      case 'open' : 
+        this.openFile();
       default :
         break; 
     }
@@ -255,18 +259,32 @@ class AllFiles extends Component {
   }
 
   openFile = (item) => {
-    console.log('触发双击')
+    let openType = null;
+    if (!item) {
+      const fileList = this.state.data.filter(item => item.active);
+      if (fileList.length > 0) {
+        if (fileList.every(item => item.file_suffix === 'mp3')) {
+          fileList.forEach(item => {
+            item.active = false;
+          });
+          fileList[0].active = true;
+          openType = 'audio';
+          ipcRenderer.send('file-control', openType, fileList);
+        }
+      }
+      return;
+    }
     if (item.file_suffix) {
       const { file_suffix } = item;
-      let openType = null;
       let data = [];
       if (file_suffix === 'pdf') {
         openType = 'pdf';
         ipcRenderer.send('file-control', openType, item)
       } else if (file_suffix === 'mp3') {
+        const MusicList = this.state.data.filter(item => item.active);
         openType = 'audio';
-        data.push(item);
-        ipcRenderer.send('file-control', openType, data)
+        data.push(item);        
+        ipcRenderer.send('file-control', openType, data.length ? data : MusicList)
       }
     } else {
       alert('暂不支持打开此类型')

@@ -42,7 +42,7 @@ let contextMenu
 let MusicPlayer
 let PdfWindow
 /*播放按钮*/
-let PlayerIcon = path.join(__static, '/img/player');
+let PlayerIcon = path.join(__static, '/asset/player');
 let NextBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'next.png'));
 let PlayBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'play.png'));
 let PauseBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'pause.png'));
@@ -490,15 +490,6 @@ function createContextMenu () {
         if (miniWindow) {
           miniWindow.hide()
         }
-      }
-    },
-    {
-      label: '打开更新助手',
-      type: 'checkbox',
-      checked: db.get('settings.showUpdateTip').value(),
-      click () {
-        const value = db.read().get('settings.showUpdateTip').value()
-        db.read().set('settings.showUpdateTip', !value).write()
       }
     },
     {
