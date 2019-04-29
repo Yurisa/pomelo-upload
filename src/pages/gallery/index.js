@@ -215,6 +215,7 @@ export default class Gallery extends React.Component {
                       className="gallery-list__item"
                       src={item.imgUrl}
                       onClick={() => this.zoomImage(index)}
+                      alt=""
                     />
                     <div className="gallery-list__tool-panel">
                       <Icon type="file-text" onClick={(item) => this.copy(item)} />

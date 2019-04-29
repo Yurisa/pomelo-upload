@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Icon } from 'antd';
 import MusicList from '../../components/MusicList';
 import Media from '../../utils/media';
 import './index.less';
@@ -15,16 +16,16 @@ class Music extends Component {
     },
     TimeText:'00:00/00:00',
     ProcessWidth:0,
-    PlayButtonState:'playsf-icon-',
+    PlayButtonState:'pause',
     VolumnState:false,
     VisualState:true,
     handle: null,
     /* 定时执行句柄 */
     list: [],
     /* lrc歌词及时间轴数组 */
-    regex: /^[^\[]*((?:\s*\[\d+\:\d+(?:\.\d+)?\])+)([\s\S]*)$/,
+    regex: /^[^[]*((?:\s*\[\d+:\d+(?:\.\d+)?\])+)([\s\S]*)$/,
     /* 提取歌词内容行 */
-    regex_time: /\[(\d+)\:((?:\d+)(?:\.\d+)?)\]/g,
+    regex_time: /\[(\d+):((?:\d+)(?:\.\d+)?)\]/g,
     /* 提取歌词时间轴 */
     regex_trim: /^\s+|\s+$/,
     /* 过滤两边空格 */
@@ -103,7 +104,7 @@ class Music extends Component {
   MusicProcess = () => {
     let media=this.refs.audio;
     this.setState({
-      TimeText: Media.secondDeal(media.currentTime)+ '/' +Media.secondDeal(media.duration),
+      TimeText: Media.secondDeal(media.currentTime) + '/' +Media.secondDeal(media.duration),
       ProcessWidth: Math.round(media.currentTime) / Math.round(media.duration) * 100 + "%"
     })
   }
@@ -131,7 +132,12 @@ class Music extends Component {
           PlayList.forEach((item) => {
             item.play = false;
           });
-          PlayList[NowCount - 1].play = 'active'
+          PlayList[NowCount - 1].play = 'active';
+          PlayList.forEach((item,index) => {
+            if (item.play === 'active') {
+              this.playCallBack(item, index);
+            }
+          });
           this.setState({
             PlayList
           })
@@ -142,7 +148,12 @@ class Music extends Component {
           PlayList.forEach((item) => {
             item.play = false;
           });
-          PlayList[NowCount + 1].play = 'active'
+          PlayList[NowCount + 1].play = 'active';
+          PlayList.forEach((item,index) => {
+            if (item.play === 'active') {
+              this.playCallBack(item, index);
+            }
+          });
           this.setState({
             PlayList
           })
@@ -155,22 +166,22 @@ class Music extends Component {
         if (media.paused) {
           media.play();
           this.setState({
-            PlayButtonState: 'sf-icon-pause'
+            PlayButtonState: 'play'
           })
           ipcRenderer.send('player-control', 'audio', 'pause')
         } else {
-          console.log('暂停')
           media.pause();
           this.setState({
-            PlayButtonState: 'sf-icon-play'
+            PlayButtonState: 'pause'
           })
           ipcRenderer.send('player-control', 'audio', 'play')
         }
-        // this.header.title = this.NowPlay.disk_name;
         if (this.state.VisualState) {
           this.Visual();
         }
         document.getElementsByClassName('cd-music-player-main')[0].focus();
+        break;
+      default: 
         break;
     }
   }
@@ -240,19 +251,30 @@ class Music extends Component {
     }))
   }
 
+  handleCanPlay = () => {
+    this.PlayerCommend('play')
+  }
+
   render() {
     const { NowPlay, VolumnState, ProcessWidth, TimeText, PlayList, PlayButtonState } = this.state;
-    console.log(PlayList)
     return (
       <div className="cd-music-player-main">
           <div className="cd-music-player-container">
             <div className="cd-music-player-title">{NowPlay.disk_name}</div>
             <ul>
                 <li className="cd-music-player-H-btn"></li>
-                <li className="sf-icon-step-backward cd-music-player-S-btn" onClick={() => this.PlayerCommend('prev')}></li>
-                <li className={`cd-music-player-B-btn ${PlayButtonState}`} onClick={() => this.PlayerCommend('play')}></li>
-                <li className="sf-icon-step-forward cd-music-player-S-btn" onClick={() => this.PlayerCommend('next')}></li>
-                <li className="sf-icon-volume-up cd-music-player-H-btn" onMouseDown={(e) => this.handleMouseDown(e)}></li>
+                <li className="cd-music-player-S-btn" onClick={() => this.PlayerCommend('prev')}>
+                  <Icon type="step-backward" />
+                </li>
+                <li className='cd-music-player-B-btn' onClick={() => this.PlayerCommend('play')}>
+                  {
+                    PlayButtonState === 'pause' ? <Icon type="caret-right" /> : PlayButtonState === 'play' ? <Icon type="pause" /> : <Icon type="loading"/>
+                  }
+                </li>
+                <li className="cd-music-player-S-btn" onClick={() => this.PlayerCommend('next')}>
+                  <Icon type="step-forward" />
+                </li>
+                <li className="cd-music-player-H-btn" onMouseDown={(e) => this.handleMouseDown(e)}></li>
             </ul>
             {
               VolumnState ? (
@@ -275,14 +297,14 @@ class Music extends Component {
           </div>
           <audio 
             id="audio"
+            ref="audio" 
             preload="auto" 
-            ref="audio"  
             onEnded={() => this.PlayerCommend('next')} 
             onTimeUpdate={this.MusicProcess} 
             onError={() => this.PlayerCommend('next')} 
-            onDurationChange={() => this.setState({PlayButtonState: 'sf-icon-pause'})} 
-            onSeeking={() => this.setState({PlayButtonState: 'sf-icon-circle-notch sf-spin'})} 
-            onCanPlay={() => this.PlayerCommend('play')} 
+            onDurationChange={() => this.setState({PlayButtonState: 'play'})} 
+            onSeeking={() => this.setState({PlayButtonState: 'loading'})} 
+            onCanPlay={this.handleCanPlay} 
             src={NowPlay.PlayUrl} >
           </audio>
           <MusicList PlayList={PlayList} play={this.playCallBack} ref="List"></MusicList>
