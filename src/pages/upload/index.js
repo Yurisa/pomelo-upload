@@ -101,7 +101,6 @@ class Upload extends Component {
   }
   render() {
     const { dragover, uploadList } = this.state;
-    console.log(uploadList);
     return (
       <Tabs defaultActiveKey="1" onChange={this.handleChange} tabBarStyle={{color: '#eeeeee'}}>
         <TabPane tab="上传区" key="1">

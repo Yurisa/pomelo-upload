@@ -7,7 +7,9 @@ import AllFiles from '../pages/allfiles';
 import Gallery from '../pages/gallery';
 import TrayPage from '../pages/traypage';
 import Pdf from '../pages/pdf';
-import Music from '../pages/music'
+import Music from '../pages/music';
+import Video from '../pages/video';
+import Text from '../pages/text';
 
 export default class ERouter extends React.Component {
   render() {
@@ -18,6 +20,8 @@ export default class ERouter extends React.Component {
             <Route path='/tray-page' component={TrayPage} />
             <Route path='/pdf-viewer' component={Pdf} />
             <Route path="/music-player" component={Music} />
+            <Route path="/video-player" component={Video} />
+            <Route path="/text-viewer" component={Text} />
             <Route path="/" render={() => 
               <Layout>
                 <Switch>

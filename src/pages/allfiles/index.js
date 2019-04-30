@@ -102,7 +102,7 @@ class AllFiles extends Component {
           d.icon = '/asset/filetype/PdfType.png';
         } else if (file_suffix === 'mp4') {
           d.icon = '/asset/filetype/VideoType.png';
-        } else if (file_suffix === 'rar') {
+        } else if (file_suffix === 'rar' || file_suffix === 'zip') {
           d.icon = '/asset/filetype/RarType.png';
         } else if (file_suffix === 'ppt' || file_suffix === 'pptx') {
           d.icon = '/asset/filetype/PptType.png';
@@ -110,6 +110,8 @@ class AllFiles extends Component {
           d.icon = '/asset/filetype/ImageType.png';
         } else if (file_suffix === 'mp3') {
           d.icon = '/asset/filetype/MusicType.png'
+        } else if (file_suffix === 'txt') {
+          d.icon = '/asset/filetype/TxtType.png'
         } else {
           d.icon = '/asset/filetype/OtherType.png';
         }
@@ -270,6 +272,13 @@ class AllFiles extends Component {
           fileList[0].active = true;
           openType = 'audio';
           ipcRenderer.send('file-control', openType, fileList);
+        } else if (fileList.every(item => item.file_suffix === 'mp3' || 'avi')) {
+          fileList.forEach(item => {
+            item.active = false;
+          });
+          fileList[0].active = true;
+          openType = 'video';
+          ipcRenderer.send('file-control', openType, fileList); 
         }
       }
       return;
@@ -285,6 +294,14 @@ class AllFiles extends Component {
         openType = 'audio';
         data.push(item);        
         ipcRenderer.send('file-control', openType, data.length ? data : MusicList)
+      } else if (file_suffix === 'mp4') {
+        const VideoList = this.state.data.filter(item => item.active);
+        openType = 'video';
+        data.push(item);        
+        ipcRenderer.send('file-control', openType, data.length ? data : VideoList)
+      } else if (file_suffix === 'txt') {
+        openType = 'text';
+        ipcRenderer.send('file-control', openType, item);
       }
     } else {
       alert('暂不支持打开此类型')
