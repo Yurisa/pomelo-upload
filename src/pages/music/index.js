@@ -69,7 +69,7 @@ class Music extends Component {
           PlayList: data
         })
       }, 200);
-     });
+    });
     ipcRenderer.on('Next',()=>{
       this.PlayerCommend('prev');
     });
@@ -274,7 +274,9 @@ class Music extends Component {
                 <li className="cd-music-player-S-btn" onClick={() => this.PlayerCommend('next')}>
                   <Icon type="step-forward" />
                 </li>
-                <li className="cd-music-player-H-btn" onMouseDown={(e) => this.handleMouseDown(e)}></li>
+                <li className="cd-music-player-H-btn" onMouseDown={(e) => this.handleMouseDown(e)}>
+                  <Icon type="sound" />
+                </li>
             </ul>
             {
               VolumnState ? (

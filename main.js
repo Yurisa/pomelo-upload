@@ -40,7 +40,10 @@ let window
 let tray
 let contextMenu
 let MusicPlayer
+let VideoPlayer
 let PdfWindow
+let FileWindow
+
 /*播放按钮*/
 let PlayerIcon = path.join(__static, '/asset/player');
 let NextBtn = nativeImage.createFromPath(path.join(PlayerIcon, 'next.png'));
@@ -69,6 +72,30 @@ let MusicButtons = [
       MusicPlayer.webContents.send('Next');
     }
   }
+];
+
+let VideoButtons = [
+  /*{
+      tooltip: '上一个',
+      icon: PrevBtn,
+      click: () => {
+          VideoPlayer.webContents.send('video-Prev');
+      }
+  },*/
+  {
+      tooltip: '播放',
+      icon: PlayBtn,
+      click: () => {
+          VideoPlayer.webContents.send('video-Play');
+      }
+  },
+  /*{
+      tooltip: '下一个',
+      icon:NextBtn,
+      click: () => {
+          VideoPlayer.webContents.send('video-Next');
+      }
+  }*/
 ];
 
 // function createWindow () {
@@ -248,7 +275,7 @@ let FileViewer = {
       return WindowControl.Active(FileWindow, data);
     }
     FileWindow = WindowControl.New({
-      url: 'file-shower',
+      url: 'text-viewer',
       data: data,
       title: '文件查看',
       width: 750,
