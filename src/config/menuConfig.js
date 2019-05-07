@@ -21,12 +21,12 @@ const menuList = [
   },
   {
     title: '视频',
-    key: '/setting/vedio',
+    key: '/setting/video',
     icon: 'video-camera'
   },
   {
     title: '音乐',
-    key: '/setting/music-viewer',
+    key: '/setting/music-list',
     icon: 'customer-service'
   }
 ];
