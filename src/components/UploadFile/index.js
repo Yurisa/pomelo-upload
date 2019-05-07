@@ -94,6 +94,7 @@ class UploadFile extends Component {
 
   upload = () => {
     const { fileSize, isGetMD5, chunks, file, status} = this.state;
+    console.log('开始上传', file)
     let { currentChunk } = this.state;
 
     if (!fileSize) {
@@ -127,7 +128,7 @@ class UploadFile extends Component {
       // 获取上传进度
       xhr.upload.onprogress = (e) => {
         this.setState({
-          uploadPrgInnerText : (fileIndex * 10000) / (chunks * 100)
+          uploadPrgInnerText : parseInt((fileIndex * 10000) / (chunks * 100))
         }, () => {
           if(fileIndex === chunks) {
             this.setState({

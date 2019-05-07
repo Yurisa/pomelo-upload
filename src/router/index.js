@@ -10,6 +10,7 @@ import Pdf from '../pages/pdf';
 import Music from '../pages/music';
 import Video from '../pages/video';
 import Text from '../pages/text';
+import MusicList from '../pages/musicList';
 
 export default class ERouter extends React.Component {
   render() {
@@ -30,6 +31,7 @@ export default class ERouter extends React.Component {
                       <Route path='/setting/upload' component={Upload} />
                       <Route path='/setting/gallery' component={Gallery} />
                       <Route path='/setting/all-files' component={AllFiles} />
+                      <Route path='/setting/music-list' component={MusicList} />
                     </Fragment>
                   )} />
                   <Redirect to="/setting/upload" />
