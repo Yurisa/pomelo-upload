@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Tabs } from 'antd';
 import axios from 'axios';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // react过渡动画 
 import MouseMenu from '../../components/MouseMenu';
 import DownloadFile from '../../components/DownloadFile';
 import './index.less';
@@ -337,11 +338,18 @@ class AllFiles extends Component {
         <MouseMenu node={this.refs.main} ref="MouseMenu" handleClick={this.handleClick}/>
         </TabPane>
         <TabPane tab={this.renderDownloadingab()} key="2">
-          {
-            TransformData.map((file, index) => {
-              return <DownloadFile file={file} index={index} ControlTrans={this.ControlTrans}/>
-            })
-          }
+          <ReactCSSTransitionGroup
+            component="div"
+            transitionName="fade"
+            transitionEnterTimeout={500}
+            transitionLeaveTimeout={300}
+          >
+            {
+              TransformData.length > 0 ? TransformData.map((file, index) => {
+                return <DownloadFile file={file} index={index} ControlTrans={this.ControlTrans}/>
+              }) : <span style={{color: '#eeeeee'}}>暂无下载任务</span>
+            }
+          </ReactCSSTransitionGroup>
         </TabPane>
       </Tabs>
     )
