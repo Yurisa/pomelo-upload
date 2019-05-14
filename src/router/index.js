@@ -11,6 +11,8 @@ import Music from '../pages/music';
 import Video from '../pages/video';
 import Text from '../pages/text';
 import MusicList from '../pages/musicList';
+import DocumentList from '../pages/documetList';
+import VideoList from '../pages/videoList';
 
 export default class ERouter extends React.Component {
   render() {
@@ -32,6 +34,8 @@ export default class ERouter extends React.Component {
                       <Route path='/setting/gallery' component={Gallery} />
                       <Route path='/setting/all-files' component={AllFiles} />
                       <Route path='/setting/music-list' component={MusicList} />
+                      <Route path='/setting/document-list' component={DocumentList} />
+                      <Route path='/setting/video-list' component={VideoList} />
                     </Fragment>
                   )} />
                   <Redirect to="/setting/upload" />

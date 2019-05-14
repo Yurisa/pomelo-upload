@@ -1,14 +1,9 @@
 import React, { Component } from 'react';
-import { Tabs } from 'antd';
 import axios from 'axios';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // react过渡动画 
 import MouseMenu from '../../components/MouseMenu';
-import DownloadFile from '../../components/DownloadFile';
 import './index.less';
 
 const domain = 'http://localhost:7001';
-const TabPane = Tabs.TabPane;
-const db = window.db;
 const electron = window.electron;
 const { ipcRenderer } = electron;
 
@@ -23,7 +18,7 @@ const DiskData = {
   Type: 'disk',//头部分类标签,
 }
 
-class AllFiles extends Component {
+class VideoList extends Component {
 
   state = {
     data: [],
@@ -117,10 +112,9 @@ class AllFiles extends Component {
 
 
   getFiles = async () => {
-    let data1 = db.read().get('uploaded').slice().reverse().value();
-    let { data: data2} = await axios.get(`${domain}/upload-files`);
+    let { data } = await axios.get(`${domain}/file/video`);
     this.setState({
-      data: data2.reverse().concat(data1)
+      data: data.body
     });
   }
 
@@ -214,48 +208,6 @@ class AllFiles extends Component {
     }
   }
 
-  ControlTrans = (event, file, index) => {
-    event.persist();
-    if (event.target.dataset.icon === 'close') {
-      if(file.trans_type === 'download'){
-        ipcRenderer.send('download', 'cancel', file.id);
-      }else{
-        this.deleteTransformData(index);
-      }
-      return;
-    }
-    if (file.state === 'completed') {
-      console.log('删除');
-      this.deleteTransformData(index);
-    } else {
-      let command=(file.state === 'progressing') ? 'pause':'resume';
-      ipcRenderer.send('download', command, file.id);
-    }
-  }
-
-  deleteTransformData = (index) => {
-    this.setState(preState => {
-      const { TransformData } = preState;
-      TransformData.splice(index, 1);
-      return {
-        TransformData
-      }
-    });
-  }
-
-  renderDownloadingab = () => {
-    const { TransformData } = this.state;
-    const len = TransformData.filter(item => item).length;
-    return (
-      <div>
-      正在下载  {len ? <span className="downloadListNum">
-            {len}
-          </span> : null
-        }
-      </div>
-    )
-  }
-
   openFile = (item) => {
     let openType = null;
     if (!item) {
@@ -321,9 +273,8 @@ class AllFiles extends Component {
     const { data, TransformData } = this.state;
     const files = this.processData(data);
     return (
-      <Tabs defaultActiveKey="1" onChange={this.handleChange} tabBarStyle={{color: '#eeeeee'}}>
-        <TabPane tab="全部文件" key="1">
-          <div ref="main">
+      <div>
+        <div ref="main">
             {
               files.length > 0 && files.map((item, index) => {
                 const {fileName, icon} = item;
@@ -344,24 +295,9 @@ class AllFiles extends Component {
             }
           </div>
         <MouseMenu node={this.refs.main} ref="MouseMenu" handleClick={this.handleClick}/>
-        </TabPane>
-        <TabPane tab={this.renderDownloadingab()} key="2">
-          <ReactCSSTransitionGroup
-            component="div"
-            transitionName="fade"
-            transitionEnterTimeout={500}
-            transitionLeaveTimeout={300}
-          >
-            {
-              TransformData.length > 0 ? TransformData.map((file, index) => {
-                return <DownloadFile file={file} key={file} index={index} ControlTrans={this.ControlTrans}/>
-              }) : <span style={{color: '#eeeeee'}}>暂无下载任务</span>
-            }
-          </ReactCSSTransitionGroup>
-        </TabPane>
-      </Tabs>
+      </div>
     )
   }
 }
 
-export default AllFiles;
+export default VideoList;

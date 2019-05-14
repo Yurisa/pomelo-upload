@@ -16,12 +16,12 @@ const menuList = [
   },
   {
     title: '文档',
-    key: '/setting/document',
+    key: '/setting/document-list',
     icon: 'file-text'
   },
   {
     title: '视频',
-    key: '/setting/video',
+    key: '/setting/video-list',
     icon: 'video-camera'
   },
   {
