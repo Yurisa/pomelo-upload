@@ -275,7 +275,7 @@ class AllFiles extends Component {
           fileList[0].active = true;
           openType = 'video';
           ipcRenderer.send('file-control', openType, fileList); 
-        }
+        } 
       }
       return;
     }
@@ -297,6 +297,9 @@ class AllFiles extends Component {
         ipcRenderer.send('file-control', openType, data.length ? data : VideoList)
       } else if (file_suffix === 'txt') {
         openType = 'text';
+        ipcRenderer.send('file-control', openType, item);
+      } else if (file_suffix === 'zip') {
+        openType = 'zip';
         ipcRenderer.send('file-control', openType, item);
       }
     } else {

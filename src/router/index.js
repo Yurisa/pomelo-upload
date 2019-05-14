@@ -13,6 +13,7 @@ import Text from '../pages/text';
 import MusicList from '../pages/musicList';
 import DocumentList from '../pages/documetList';
 import VideoList from '../pages/videoList';
+import Zip from '../pages/zip';
 
 export default class ERouter extends React.Component {
   render() {
@@ -25,6 +26,7 @@ export default class ERouter extends React.Component {
             <Route path="/music-player" component={Music} />
             <Route path="/video-player" component={Video} />
             <Route path="/text-viewer" component={Text} />
+            <Route path="/zip-viewer" component={Zip} />
             <Route path="/" render={() => 
               <Layout>
                 <Switch>
