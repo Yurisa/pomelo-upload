@@ -43,6 +43,7 @@ let MusicPlayer
 let VideoPlayer
 let PdfWindow
 let FileWindow
+let ZipWindow
 
 /*播放按钮*/
 let PlayerIcon = path.join(__static, '/asset/player');
@@ -284,6 +285,23 @@ let FileViewer = {
       minWidth: 500,
       onclose: () => {
         FileWindow = null;
+      }
+    });
+  },
+  Zip: (data) => {
+    if (ZipWindow) {
+      return WindowControl.Active(ZipWindow, data);
+    }
+    ZipWindow = WindowControl.New({
+      url: 'zip-viewer',
+      data: data,
+      title: '压缩文件查看',
+      width: 750,
+      height: 500,
+      minHeight: 350,
+      minWidth: 500,
+      onclose: () => {
+        ZipWindow = null;
       }
     });
   },
@@ -715,6 +733,9 @@ ipcMain.on('file-control', (event, type, data) => {
       break;
     case 'pdf':
       FileViewer.Pdf(data);
+      break;
+    case 'zip':
+      FileViewer.Zip(data);
       break;
     case 'text'://文本
       FileViewer.Text(data);
