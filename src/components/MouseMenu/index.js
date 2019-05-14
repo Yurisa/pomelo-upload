@@ -9,7 +9,10 @@ class MouseMenu extends Component {
         name:"打开",key:"Ctrl+O",command:"open",data:"",disabled:'SelectFiles.length>1'
       },
       {
-        name:"下载",key:"Ctrl+O",command:"download",data:""
+        name:"下载",key:"Ctrl+d",command:"download",data:""
+      },
+      {
+        name:"删除",key:"Ctrl+dd",command:"remove",data:""
       },
       {
         name:"属性",key:"Alt+Enter",command:"info",data:"",disabled:'SelectFiles.length>1'
