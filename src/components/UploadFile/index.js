@@ -52,7 +52,7 @@ class UploadFile extends Component {
   }
 
   loadBlob = (file) => {
-    let chunkSize = 1024 * 1024 * 4, // 每一个文件块为2MB
+    let chunkSize = 1024 * 1024 * 100, // 每一个文件块为2MB
         chunks = Math.ceil(file.size / chunkSize), // 文件块总数
         chunk = 0, // 文件块的序号
         spark = new SparkMD5.ArrayBuffer();
@@ -148,30 +148,34 @@ class UploadFile extends Component {
           }
         });
       }
-
+    
       xhr.open("POST", `http://localhost:7001/upload`);
 
       xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          let result = JSON.parse(xhr.responseText)
-          if (result.exist === 1) {
-            xhr.abort();
-            this.setState({
-              fileIndex: 0,
-              currentChunk: 0,
-              uploadPrgInnerText: 100,
-              status: 'completed'
-            });
-            this.props.onFinished(this.props.index);
-          } else {
-            this.setState({
-              currentChunk: ++currentChunk
-            }, () => {
-              if (fileIndex < chunks && status === 'progressing') {
-                this.upload();
-              }
-            })              
+        try {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            let result = JSON.parse(xhr.responseText)
+            if (result.exist === 1) {
+              xhr.abort();
+              this.setState({
+                fileIndex: 0,
+                currentChunk: 0,
+                uploadPrgInnerText: 100,
+                status: 'completed'
+              });
+              this.props.onFinished(this.props.index);
+            } else {
+              this.setState({
+                currentChunk: ++currentChunk
+              }, () => {
+                if (fileIndex < chunks && status === 'progressing') {
+                  this.upload();
+                }
+              })              
+            }
           }
+        } catch (e) {
+          console.log(e);
         }
       }
 
@@ -229,9 +233,7 @@ class UploadFile extends Component {
         </div>
         <div className="task-actions">
           <Icon type={this.controlBtn()} onClick={status === 'interrupted' ? this.reupload : this.pause }/>
-          <Icon type="close"/>
-          <Icon type="folder"/>
-          <Icon type="link"/>
+          <Icon type="close" onClick={() => this.props.onFinished(this.props.index)}/>
         </div>
         <div className="task-progress">
           <Progress  
