@@ -82,29 +82,29 @@ class MusicList extends Component {
         d.fileName = d.file_name;
         d.downloadUrl = `${domain}${d.file_path}`
         if (file_suffix === 'xls') {
-          d.icon = '/asset/filetype/ExcelType.png';
+          d.icon = './asset/filetype/ExcelType.png';
         } else if (file_suffix === 'doc' || file_suffix === 'docx') {
-          d.icon = '/asset/filetype/DocType.png';
+          d.icon = './asset/filetype/DocType.png';
         } else if (file_suffix === 'pdf') {
-          d.icon = '/asset/filetype/PdfType.png';
+          d.icon = './asset/filetype/PdfType.png';
         } else if (file_suffix === 'mp4') {
-          d.icon = '/asset/filetype/VideoType.png';
+          d.icon = './asset/filetype/VideoType.png';
         } else if (file_suffix === 'rar' || file_suffix === 'zip') {
-          d.icon = '/asset/filetype/RarType.png';
+          d.icon = './asset/filetype/RarType.png';
         } else if (file_suffix === 'ppt' || file_suffix === 'pptx') {
-          d.icon = '/asset/filetype/PptType.png';
+          d.icon = './asset/filetype/PptType.png';
         } else if (file_suffix === 'svg' || file_suffix === 'png' || file_suffix === 'jpg') {
-          d.icon = '/asset/filetype/ImageType.png';
+          d.icon = './asset/filetype/ImageType.png';
         } else if (file_suffix === 'mp3') {
-          d.icon = '/asset/filetype/MusicType.png'
+          d.icon = './asset/filetype/MusicType.png'
         } else if (file_suffix === 'txt') {
-          d.icon = '/asset/filetype/TxtType.png'
+          d.icon = './asset/filetype/TxtType.png'
         } else {
-          d.icon = '/asset/filetype/OtherType.png';
+          d.icon = './asset/filetype/OtherType.png';
         }
       } else if (d.imgUrl) {
         d.downloadUrl = d.imgUrl;
-        d.icon = '/asset/filetype/ImageType.png';
+        d.icon = './asset/filetype/ImageType.png';
       } 
     });
     return data;
