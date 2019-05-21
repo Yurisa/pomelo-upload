@@ -2,7 +2,6 @@ const {app, BrowserWindow, ipcMain, Tray, dialog, session, Menu, globalShortcut,
 const path = require('path');
 const db = require('./src/datastore');
 const { getPicBeds } = require('./src/mainUtils/getPicBeds');
-const url = require('url');
 const pkg = require('./package.json');
 const Uploader = require('./src/mainUtils/upload');
 const pasteTemplate = require('./src/mainUtils/pasteTemplate');
@@ -15,23 +14,23 @@ let DownloadList={};  // 下载文件列表
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
 if (process.env.NODE_ENV !== 'development') {
-  global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
-}
-if (process.env.DEBUG_ENV === 'debug') {
-  global.__static = require('path').join(__dirname, '../../static').replace(/\\/g, '\\\\')
+  global.__static = path.join(__dirname, './build').replace(/\\/g, '\\\\')
 }
 if (process.env.NODE_ENV === 'development') {
   global.__static = path.join(__dirname, '/public').replace(/\\/g, '\\\\')
 }
 
 const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:3000/#/tray-page` : ''
+  ? `http://localhost:3000/#/tray-page` 
+  : `file://${__dirname}/build/index.html#/tray-page`;
 
 const settingWinURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:3000/#setting/upload` : ''
+  ? `http://localhost:3000/#setting/upload` 
+  : `file://${__dirname}/build/index.html#/upload`;
 
 const miniWinURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:3000/#mini-page` : ''
+  ? `http://localhost:3000/#mini-page` 
+  : `file://${__dirname}/build/index.html#/mini-page`;
 // 保持一个对于 window 对象的全局引用，如果你不这样做，
 // 当 JavaScript 对象被垃圾回收， window 会被自动地关闭
 let miniWindow
@@ -155,7 +154,9 @@ let WindowControl = {
     options.backgroundColor && (win.backgroundColor = options.backgroundColor);
     win.name = options.url;
     if (options.title === 'PDF阅读器') {
-      win.loadURL(`http://localhost:3000/` + options.url)
+      win.loadURL(process.env.NODE_ENV === 'development' 
+      ? `http://localhost:3000/` + options.url 
+      : `file://${__dirname}/build/${options.url}`)
     } else {
       win.loadURL(WindowControl.CheckRouter(options.url));
     }
@@ -181,7 +182,7 @@ let WindowControl = {
   CheckRouter: (router) => {
     return process.env.NODE_ENV === 'development'
       ? `http://localhost:3000/#/` + router
-      : `file://${__dirname}/index.html#/` + router;
+      : `file://${__dirname}/build/index.html#/${router}`;
   },
   Active: (win, data) => {
     if (win) {
@@ -373,7 +374,7 @@ const createWindow = () => {
       skipTaskbar: true,
       resizable: false,
       transparent: true,
-      icon: `/publ/logo.png`,
+      icon: `/public/logo.png`,
       webPreferences: {
         backgroundThrottling: false,
         preload: path.join(__dirname, './public/renderer.js')

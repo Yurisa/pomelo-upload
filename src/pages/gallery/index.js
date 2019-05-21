@@ -164,7 +164,6 @@ export default class Gallery extends React.Component {
    */
   copy = (item) => {
     const url = item.url || item.imgUrl;  
-    console.log('url', url);
     const style = db.read().get('settings.pasteStyle').value() || 'markdown';
     const copyLink = pasteStyle(db, style, url);
     const obj = {
