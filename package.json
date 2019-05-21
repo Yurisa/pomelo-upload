@@ -3,35 +3,80 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/core": "7.2.2",
+    "@svgr/webpack": "4.1.0",
     "antd": "^3.13.6",
     "axios": "^0.18.0",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "9.0.0",
+    "babel-jest": "23.6.0",
+    "babel-loader": "8.0.5",
+    "babel-plugin-named-asset-import": "^0.3.1",
+    "babel-preset-react-app": "^7.0.1",
+    "bfj": "6.1.1",
+    "case-sensitive-paths-webpack-plugin": "2.2.0",
+    "css-loader": "1.0.0",
     "dayjs": "^1.8.10",
+    "dotenv": "6.0.0",
+    "dotenv-expand": "4.2.0",
+    "eslint": "5.12.0",
+    "eslint-config-react-app": "^3.0.7",
+    "eslint-loader": "2.1.1",
+    "eslint-plugin-flowtype": "2.50.1",
+    "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-jsx-a11y": "6.1.2",
+    "eslint-plugin-react": "7.12.4",
+    "file-loader": "2.0.0",
+    "fork-ts-checker-webpack-plugin-alt": "0.4.14",
+    "fs-extra": "7.0.1",
     "highlight.js": "^9.15.6",
+    "html-webpack-plugin": "4.0.0-alpha.2",
+    "identity-obj-proxy": "3.0.0",
+    "jest": "23.6.0",
+    "jest-pnp-resolver": "1.0.2",
+    "jest-resolve": "23.6.0",
+    "jest-watch-typeahead": "^0.2.1",
     "jszip": "^3.2.1",
     "jszip-utils": "^0.0.2",
     "less": "^3.9.0",
     "less-loader": "^4.1.0",
     "lodash-id": "^0.14.0",
     "lowdb": "^1.0.0",
+    "mini-css-extract-plugin": "0.5.0",
+    "optimize-css-assets-webpack-plugin": "5.0.1",
     "picgo": "^1.2.8",
+    "pnp-webpack-plugin": "1.2.1",
+    "postcss-flexbugs-fixes": "4.1.0",
+    "postcss-loader": "3.0.0",
+    "postcss-preset-env": "6.5.0",
+    "postcss-safe-parser": "4.0.1",
     "react": "^16.8.3",
     "react-addons-css-transition-group": "^15.6.2",
+    "react-app-polyfill": "^0.2.1",
     "react-app-rewired": "^2.1.0",
     "react-bnb-gallery": "^1.1.5",
+    "react-dev-utils": "^7.0.3",
     "react-dom": "^16.8.3",
     "react-highlight": "^0.12.0",
     "react-image-gallery": "^0.8.16",
     "react-redux": "^6.0.1",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "2.1.5",
     "redux": "^4.0.1",
-    "spark-md5": "^3.0.0"
+    "resolve": "1.10.0",
+    "sass-loader": "7.1.0",
+    "spark-md5": "^3.0.0",
+    "style-loader": "0.23.1",
+    "terser-webpack-plugin": "1.2.2",
+    "url-loader": "1.1.2",
+    "webpack": "4.28.3",
+    "webpack-dev-server": "3.1.14",
+    "webpack-manifest-plugin": "2.0.4",
+    "workbox-webpack-plugin": "3.6.3"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "node scripts/start.js",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test --env=jsdom",
-    "eject": "react-scripts eject",
     "electron-start": "NODE_ENV=development electron --inspect=5858 .",
     "electron-package": "electron-packager . app --darwin --out presenterTool --arch=x64 --icon=./public/icons/icon.icns --overwrite --ignore=node_modulesls --electron-version=4.0.6"
   },
@@ -51,5 +96,55 @@
     "electron-packager": "^13.1.0"
   },
   "main": "main.js",
-  "homepage": "."
+  "homepage": ".",
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts"
+    ],
+    "resolver": "jest-pnp-resolver",
+    "setupFiles": [
+      "react-app-polyfill/jsdom"
+    ],
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",
+      "<rootDir>/src/**/?(*.)(spec|test).{js,jsx,ts,tsx}"
+    ],
+    "testEnvironment": "jsdom",
+    "testURL": "http://localhost",
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/babel-jest",
+      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
+      "^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ],
+    "moduleNameMapper": {
+      "^react-native$": "react-native-web",
+      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
+    },
+    "moduleFileExtensions": [
+      "web.js",
+      "js",
+      "web.ts",
+      "ts",
+      "web.tsx",
+      "tsx",
+      "json",
+      "web.jsx",
+      "jsx",
+      "node"
+    ],
+    "watchPlugins": [
+      "/Users/hdd/Project/pomelo-upload/node_modules/jest-watch-typeahead/filename.js",
+      "/Users/hdd/Project/pomelo-upload/node_modules/jest-watch-typeahead/testname.js"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "react-app"
+    ]
+  }
 }
