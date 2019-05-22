@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Tabs } from 'antd';
 import axios from 'axios';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // react过渡动画 
 import MouseMenu from '../../components/MouseMenu';
 import DownloadFile from '../../components/DownloadFile';
 import './index.less';
@@ -102,7 +101,7 @@ class AllFiles extends Component {
           d.icon = './asset/filetype/ImageType.png';
         } else if (file_suffix === 'mp3') {
           d.icon = './asset/filetype/MusicType.png'
-        } else if (file_suffix === 'txt') {
+        } else if (file_suffix === 'txt' || file_suffix === 'js') {
           d.icon = './asset/filetype/TxtType.png'
         } else {
           d.icon = './asset/filetype/OtherType.png';
@@ -295,7 +294,7 @@ class AllFiles extends Component {
         openType = 'video';
         data.push(item);        
         ipcRenderer.send('file-control', openType, data.length ? data : VideoList)
-      } else if (file_suffix === 'txt') {
+      } else if (file_suffix === 'txt' || file_suffix === 'js') {
         openType = 'text';
         ipcRenderer.send('file-control', openType, item);
       } else if (file_suffix === 'zip') {
@@ -349,18 +348,11 @@ class AllFiles extends Component {
         <MouseMenu node={this.refs.main} ref="MouseMenu" handleClick={this.handleClick}/>
         </TabPane>
         <TabPane tab={this.renderDownloadingab()} key="2">
-          <ReactCSSTransitionGroup
-            component="div"
-            transitionName="fade"
-            transitionEnterTimeout={500}
-            transitionLeaveTimeout={300}
-          >
-            {
-              TransformData.length > 0 ? TransformData.map((file, index) => {
-                return <DownloadFile file={file} key={file} index={index} ControlTrans={this.ControlTrans}/>
-              }) : <span style={{color: '#eeeeee'}}>暂无下载任务</span>
-            }
-          </ReactCSSTransitionGroup>
+          {
+            TransformData.length > 0 ? TransformData.map((file, index) => {
+              return <DownloadFile file={file} key={file} index={index} ControlTrans={this.ControlTrans}/>
+            }) : <span style={{color: '#eeeeee'}}>暂无下载任务</span>
+          }
         </TabPane>
       </Tabs>
     )

@@ -33,7 +33,7 @@
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "electron-start": "NODE_ENV=development electron --inspect=5858 .",
-    "electron-package": "electron-packager . app --darwin --out presenterTool --arch=x64 --icon=./public/icons/icon.icns --overwrite --ignore=node_modulesls --electron-version=4.0.6"
+    "electron-package": "electron-packager . pomelo-upload --darwin --out presenterTool --arch=x64 --icon=./public/icons/icon.icns --overwrite --ignore=node_modulesls --electron-version=4.0.6"
   },
   "eslintConfig": {
     "extends": "react-app"
