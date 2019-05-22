@@ -26,7 +26,7 @@ class DownloadFile extends Component {
   }
 
   PercentCount(item){
-    return parseFloat(((item.chunk/item.size)*100));
+    return parseInt(((item.chunk/item.size)*100));
   }
 
   OpenDownPath(item){
