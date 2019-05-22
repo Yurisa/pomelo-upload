@@ -97,7 +97,7 @@ class DocumentList extends Component {
           d.icon = './asset/filetype/ImageType.png';
         } else if (file_suffix === 'mp3') {
           d.icon = './asset/filetype/MusicType.png'
-        } else if (file_suffix === 'txt') {
+        } else if (file_suffix === 'txt' || file_suffix === 'js') {
           d.icon = './asset/filetype/TxtType.png'
         } else {
           d.icon = './asset/filetype/OtherType.png';
@@ -247,7 +247,7 @@ class DocumentList extends Component {
         openType = 'video';
         data.push(item);        
         ipcRenderer.send('file-control', openType, data.length ? data : VideoList)
-      } else if (file_suffix === 'txt') {
+      } else if (file_suffix === 'txt' || file_suffix === 'js') {
         openType = 'text';
         ipcRenderer.send('file-control', openType, item);
       }
