@@ -203,6 +203,7 @@ class VideoList extends Component {
         break;
       case 'remove' :
         this.removeFile();
+        break
       default :
         break; 
     }
@@ -261,7 +262,7 @@ class VideoList extends Component {
       const fileList = this.state.data.filter(item => item.active);
       if (fileList.length > 0) {
         for(let i = 0; i < fileList.length; i++) {
-          let res = await axios.delete(`${domain}/file/${fileList[i].file_id}`);
+          await axios.delete(`${domain}/file/${fileList[i].file_id}`);
         }
         this.getFiles();
       }
@@ -270,7 +271,7 @@ class VideoList extends Component {
   }
 
   render() {
-    const { data, TransformData } = this.state;
+    const { data } = this.state;
     const files = this.processData(data);
     return (
       <div>

@@ -202,7 +202,7 @@ class Music extends Component {
       this.audioSrc.connect(this.analyser);
       this.analyser.connect(this.ctx.destination);
     }
-    let frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
+    // let frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
     let canvas = document.getElementById('canvas'),
         cwidth = canvas.width,
         cheight = canvas.height,

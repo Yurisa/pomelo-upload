@@ -6,15 +6,16 @@ const { ipcRenderer } = electron;
 
 class Pdf extends Component {
   state = {
-    src: null
-  }
+    src: null,
+  };
 
   componentWillMount() {
-    ipcRenderer.on('win-data', (event, data)=>{//接收打开pdf文件的数据
-      setTimeout(()=>{
+    ipcRenderer.on('win-data', (event, data) => {
+      //接收打开pdf文件的数据
+      setTimeout(() => {
         this.setState({
-          src: `/pdf/web/viewer.html?file=${data.downloadUrl}')`
-        })
+          src: `/pdf/web/viewer.html?file=${data.downloadUrl}')`,
+        });
       }, 200);
     });
   }
@@ -22,12 +23,12 @@ class Pdf extends Component {
   render() {
     const { src } = this.state;
     return (
-      <div className="PdfWindow">
-        <div className="PDfContainer">
-          <iframe src={src}></iframe>
+      <div className='PdfWindow'>
+        <div className='PDfContainer'>
+          <iframe title='pdfpreview' src={src} />
         </div>
       </div>
-    )
+    );
   }
 }
 

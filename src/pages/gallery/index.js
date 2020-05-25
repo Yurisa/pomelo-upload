@@ -9,7 +9,6 @@ const Option = Select.Option;
 const Search = Input.Search;
 
 const electron = window.electron;
-const { ipcRenderer } = electron;
 const db = window.db;
 export default class Gallery extends React.Component {
   state = {
@@ -206,7 +205,7 @@ export default class Gallery extends React.Component {
 
   onConfirmDelete = (item) => {
     const { id } = item;
-    const file = db.read().get('uploaded').getById(id).value();
+    // const file = db.read().get('uploaded').getById(id).value();
     db.read().get('uploaded').removeById(id).write()
     const obj = {
       title: '操作结果',
@@ -233,7 +232,7 @@ export default class Gallery extends React.Component {
   }
 
   render() {
-    const { filterList, handleBarActive, pasteStyle, pasteStyleMap, choosedList, idx, images, galleryOpened } = this.state;
+    const { filterList, handleBarActive, pasteStyleMap, choosedList, idx, images, galleryOpened } = this.state;
     const photos = this.processImages(images);
     return (
       <div id="gallery-view">
