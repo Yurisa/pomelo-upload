@@ -1,16 +1,16 @@
 /* eslint-disable no-unused-expressions */
 const {
   app,
-  BrowserWindow,
-  ipcMain,
-  Tray,
-  dialog,
-  session,
-  Menu,
-  globalShortcut,
-  clipboard,
-  Notification,
-  nativeImage,
+  BrowserWindow, // 窗口
+  ipcMain,  // 主进程
+  Tray,  // 小图标托盘
+  dialog, // 对话框
+  session, // 浏览器下载功能实现
+  Menu,  // 菜单
+  globalShortcut, // 全局快捷键
+  clipboard,  // 剪切板
+  Notification, // 通知
+  nativeImage,  // 原生图片对象
 } = require('electron');
 const path = require('path');
 const db = require('./src/datastore');
@@ -562,11 +562,11 @@ function createContextMenu() {
       label: '关于',
       click() {
         dialog.showMessageBox({
-          title: 'PicGo',
-          message: 'PicGo',
+          title: 'Pomelo Upload',
+          message: 'Pomelo Upload',
           detail: `Version: ${
             pkg.version
-          }\nAuthor: Molunerfinn\nGithub: https://github.com/Molunerfinn/PicGo`,
+          }\nAuthor: Yurisa\nGithub: https://github.com/Yurisa/pomelo-upload`,
         });
       },
     },
