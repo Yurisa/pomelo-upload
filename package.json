@@ -47,7 +47,7 @@
   "devDependencies": {
     "babel-plugin-import": "^1.11.0",
     "customize-cra": "^0.2.12",
-    "electron": "^4.0.6",
+    "electron": "^7.2.4",
     "electron-packager": "^13.1.0"
   },
   "main": "main.js",
