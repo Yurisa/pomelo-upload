@@ -5806,9 +5806,9 @@ jszip-utils@^0.0.2:
   version "0.0.2"
   resolved "https://registry.npmjs.org/jszip-utils/-/jszip-utils-0.0.2.tgz#457d5cbca60a1c2e0706e9da2b544e8e7bc50bf8"
 
-jszip@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.npmjs.org/jszip/-/jszip-3.2.1.tgz#c5d32df7274042282b157efb16e522b43435e01a"
+jszip@^3.7.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/jszip/-/jszip-3.7.0.tgz#9b8b995a4e7c9024653ce743e902076a82fdf4e6"
   dependencies:
     lie "~3.3.0"
     pako "~1.0.2"
