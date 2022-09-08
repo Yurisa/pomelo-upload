@@ -7,7 +7,7 @@
     "axios": "^0.18.0",
     "dayjs": "^1.8.10",
     "highlight.js": "^9.15.6",
-    "jszip": "^3.2.1",
+    "jszip": "^3.7.0",
     "jszip-utils": "^0.0.2",
     "less": "^3.9.0",
     "less-loader": "^4.1.0",
